@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(gh repo:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -fsSL https://raw.githubusercontent.com/obra/superpowers/main/CLAUDE.md)",
+      "Bash(curl -fsSL https://raw.githubusercontent.com/obra/superpowers/main/README.md)",
+      "Bash(curl -fsSL https://raw.githubusercontent.com/obra/superpowers/main/agents/claude-code/CLAUDE.md)",
+      "Bash(curl -fsSL \"https://api.github.com/repos/obra/superpowers/git/trees/main?recursive=1\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(i['path']\\) for i in data.get\\('tree',[]\\) if 'CLAUDE' in i['path'] or 'install' in i['path'].lower\\(\\) or 'claude-code' in i['path'].lower\\(\\)]\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(i['path']\\) for i in data.get\\('tree',[]\\) if i['path'].endswith\\('.md'\\) or 'skill' in i['path'].lower\\(\\)]\")",
+      "Bash(curl -fsSL https://raw.githubusercontent.com/obra/superpowers/main/AGENTS.md)"
+    ]
+  }
+}
