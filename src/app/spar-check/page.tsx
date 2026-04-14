@@ -1,9 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  getManagedSwitchCards,
+  getSelfCompareCards,
+  type HeatingType,
+} from '@/lib/affiliateRecommendations';
+import { trackEvent } from '@/lib/tracking';
 
 // ─── Typen ────────────────────────────────────────────────────────────────────
-type HeatingType = 'gas' | 'oil' | 'pellets' | 'heatpump' | 'unknown';
 type GasUsage    = 'heating' | 'hotwater' | 'cooking';
 
 interface SparCheckData {
@@ -13,6 +18,7 @@ interface SparCheckData {
   persons:          number;
   electricityKnown: boolean;
   electricityKwh:   number;       // nur relevant wenn electricityKnown === true
+  zip:              string;
 }
 
 const DEFAULT_DATA: SparCheckData = {
@@ -22,6 +28,7 @@ const DEFAULT_DATA: SparCheckData = {
   persons:          2,
   electricityKnown: false,
   electricityKwh:   3000,
+  zip:              '',
 };
 
 // ─── Preise (BDEW/Verivox 2026) ───────────────────────────────────────────────
@@ -45,6 +52,37 @@ interface CostItem {
   note:    string;      // z.B. "140 kWh/m²/Jahr × 120 m²"
   current: number;
   optimal: number;
+}
+
+function getInitialSparCheckData(): SparCheckData {
+  if (typeof window === 'undefined') return DEFAULT_DATA;
+
+  const zipFromUrl = new URLSearchParams(window.location.search).get('zip');
+  const saved = localStorage.getItem('sparCheckData');
+  let nextData = DEFAULT_DATA;
+
+  if (saved) {
+    try {
+      const p = JSON.parse(saved);
+      nextData = {
+        heating:          p.heating          ?? 'unknown',
+        gasUsage:         Array.isArray(p.gasUsage) ? p.gasUsage : ['heating'],
+        area:             Number(p.area)     || 100,
+        persons:          Number(p.persons)  || 2,
+        electricityKnown: p.electricityKnown ?? false,
+        electricityKwh:   Number(p.electricityKwh) || 3000,
+        zip:              /^\d{5}$/.test(p.zip ?? '') ? p.zip : '',
+      };
+    } catch {
+      localStorage.removeItem('sparCheckData');
+    }
+  }
+
+  if (zipFromUrl && /^\d{5}$/.test(zipFromUrl)) {
+    nextData = { ...nextData, zip: zipFromUrl };
+  }
+
+  return nextData;
 }
 
 function calculateCosts(data: SparCheckData): CostItem[] {
@@ -143,28 +181,9 @@ function getActiveStepIds(data: SparCheckData): StepId[] {
 
 // ─── Hauptkomponente ──────────────────────────────────────────────────────────
 export default function SparCheck() {
-  const [step, setStep]   = useState(0);
-  const [data, setData]   = useState<SparCheckData>(DEFAULT_DATA);
-
-  // Aus localStorage laden
-  useEffect(() => {
-    const saved = localStorage.getItem('sparCheckData');
-    if (saved) {
-      try {
-        const p = JSON.parse(saved);
-        setData({
-          heating:          p.heating          ?? 'unknown',
-          gasUsage:         Array.isArray(p.gasUsage) ? p.gasUsage : ['heating'],
-          area:             Number(p.area)     || 100,
-          persons:          Number(p.persons)  || 2,
-          electricityKnown: p.electricityKnown ?? false,
-          electricityKwh:   Number(p.electricityKwh) || 3000,
-        });
-      } catch {
-        localStorage.removeItem('sparCheckData');
-      }
-    }
-  }, []);
+  const [data, setData]   = useState<SparCheckData>(getInitialSparCheckData);
+  const [step, setStep]   = useState(() => (getInitialSparCheckData().zip ? 1 : 0));
+  const trackedStepRef = useRef<string | null>(null);
 
   // In localStorage speichern
   useEffect(() => {
@@ -175,25 +194,20 @@ export default function SparCheck() {
     setData((prev) => ({ ...prev, ...partial }));
 
   // Aktive Schritte neu berechnen wenn sich Heiztyp ändert
-  const activeStepIds = useMemo(() => getActiveStepIds(data), [data.heating]);
-
-  // Schritt-Index absichern wenn sich Liste ändert
-  useEffect(() => {
-    if (step >= activeStepIds.length) setStep(activeStepIds.length - 1);
-  }, [activeStepIds.length]);
-
-  const currentStepId  = activeStepIds[step];
-  const isFirst        = step === 0;
-  const isLast         = step === activeStepIds.length - 1;
+  const activeStepIds = getActiveStepIds(data);
+  const safeStep = Math.min(step, activeStepIds.length - 1);
+  const currentStepId  = activeStepIds[safeStep];
+  const isFirst        = safeStep === 0;
+  const isLast         = safeStep === activeStepIds.length - 1;
   const isResultStep   = currentStepId === 'result';
   // Nicht-Inhalt-Schritte: welcome und result (kein "Weiter"-Button nötig)
   const showNext       = !isLast && currentStepId !== 'welcome';
 
   const goNext = () => {
-    if (step < activeStepIds.length - 1) setStep(step + 1);
+    if (safeStep < activeStepIds.length - 1) setStep(safeStep + 1);
   };
   const goPrev = () => {
-    if (step > 0) setStep(step - 1);
+    if (safeStep > 0) setStep(safeStep - 1);
   };
 
   // Gas-Nutzung togglen
@@ -211,6 +225,118 @@ export default function SparCheck() {
   const totalCurrent = costs.reduce((s, c) => s + c.current, 0);
   const totalOptimal = costs.reduce((s, c) => s + c.optimal, 0);
   const totalSaving  = totalCurrent - totalOptimal;
+  const selfCompareCards = getSelfCompareCards({
+    heating: data.heating,
+    area: data.area,
+    persons: data.persons,
+    electricityKwh: data.electricityKnown ? data.electricityKwh : undefined,
+    zip: data.zip,
+  });
+  const managedCards = getManagedSwitchCards({
+    heating: data.heating,
+    area: data.area,
+    persons: data.persons,
+    electricityKwh: data.electricityKnown ? data.electricityKwh : undefined,
+    zip: data.zip,
+  });
+
+  function StarRating({ rating }: { rating: number }) {
+    return (
+      <div className="flex items-center gap-0.5">
+        {[1, 2, 3, 4, 5].map((s) => (
+          <svg key={s} className={`h-3.5 w-3.5 ${s <= Math.round(rating) ? 'text-amber-400' : 'text-slate-200'}`} fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        ))}
+        <span className="ml-1 text-xs font-semibold text-slate-500">{rating.toFixed(1)}</span>
+      </div>
+    );
+  }
+
+  function PortalCardUI({
+    card,
+    accent = 'primary',
+    onClick,
+  }: {
+    card: { name: string; taglines: string[]; rating: number; url: string; buttonText: string; isRecommended?: boolean };
+    accent?: 'primary' | 'dark';
+    onClick?: () => void;
+  }) {
+    const recommended = !!card.isRecommended;
+    const recommendedBadgeClass =
+      accent === 'primary'
+        ? 'bg-primary text-slate-950 shadow shadow-primary/20'
+        : 'bg-slate-900 text-white shadow shadow-slate-900/20';
+    const buttonClass =
+      recommended && accent === 'primary'
+        ? 'bg-primary text-slate-950 hover:bg-primary/90 shadow-md shadow-primary/20'
+        : 'bg-slate-800 text-white hover:bg-slate-700';
+
+    return (
+      <div className={`relative flex min-h-[305px] flex-col rounded-3xl border p-5 transition hover:-translate-y-0.5 hover:shadow-md ${
+        recommended ? 'border-primary/25 bg-white shadow-md shadow-primary/5' : 'border-slate-200 bg-slate-50/80'
+      }`}>
+        {recommended && (
+          <div className="absolute -top-3 left-4">
+            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold ${recommendedBadgeClass}`}>
+              ★ Unsere Empfehlung
+            </span>
+          </div>
+        )}
+        <div className="flex-1">
+          <p className={`mb-1.5 mt-1 text-base font-bold ${recommended ? 'text-slate-900' : 'text-slate-700'}`}>{card.name}</p>
+          <StarRating rating={card.rating} />
+          <ul className="mt-3 space-y-2">
+            {card.taglines.map((t) => (
+              <li key={t} className="flex items-start gap-1.5 text-xs leading-snug text-slate-600">
+                <span className="mt-0.5 shrink-0 text-primary">✓</span>
+                {t}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <a
+          href={card.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onClick}
+          className={`mt-5 inline-flex min-h-12 items-center justify-center rounded-full px-4 py-2.5 text-center text-xs font-semibold transition ${buttonClass}`}
+        >
+          {card.buttonText}
+        </a>
+      </div>
+    );
+  }
+
+  useEffect(() => {
+    const trackingKey = `${currentStepId}-${safeStep}-${data.heating}-${data.zip ? 'zip' : 'nozip'}`;
+    if (trackedStepRef.current === trackingKey) return;
+    trackedStepRef.current = trackingKey;
+
+    trackEvent(currentStepId === 'result' ? 'spar_check_result_view' : 'spar_check_step_view', {
+      step: currentStepId,
+      step_index: safeStep,
+      heating: data.heating,
+      zip_present: !!data.zip,
+      electricity_known: data.electricityKnown,
+    });
+  }, [currentStepId, safeStep, data.heating, data.zip, data.electricityKnown]);
+
+  const trackAffiliateClick = (provider: string, way: 'self_compare' | 'managed_service', url: string) => {
+    trackEvent('spar_check_affiliate_click', {
+      provider,
+      way,
+      heating: data.heating,
+      zip_present: !!data.zip,
+      target_host: (() => {
+        try {
+          return new URL(url).host;
+        } catch {
+          return '';
+        }
+      })(),
+    });
+  };
 
   // ─── Schritt-Inhalte ────────────────────────────────────────────────────
   const stepContent: Record<StepId, { title: string; description: string; content: React.ReactNode }> = {
@@ -224,7 +350,13 @@ export default function SparCheck() {
             Wir fragen nur, was wir wirklich brauchen – und zeigen dir dann konkrete Beträge. Keine Schätzungen ins Blaue.
           </p>
           <button
-            onClick={() => setStep(1)}
+            onClick={() => {
+              trackEvent('spar_check_started', {
+                entry_point: data.zip ? 'homepage_with_zip' : 'direct_welcome',
+                zip_present: !!data.zip,
+              });
+              setStep(1);
+            }}
             className="bg-primary text-white px-10 py-4 rounded-2xl font-semibold hover:bg-primary/90 transition"
           >
             Jetzt starten →
@@ -321,18 +453,29 @@ export default function SparCheck() {
       content: (
         <div className="space-y-8">
           <div className="space-y-3">
-            <label className="block font-semibold text-gray-800">
-              Wohnfläche (m²)
-            </label>
+            <div className="flex items-center justify-between gap-4">
+              <label className="block font-semibold text-gray-800">
+                Wohnfläche (m²)
+              </label>
+              <div className="rounded-full bg-primary/10 px-4 py-2 text-base font-bold text-primary">
+                {data.area} m²
+              </div>
+            </div>
             <input
-              type="number"
+              type="range"
               min={20}
-              max={400}
+              max={250}
+              step={5}
               value={data.area}
-              onChange={(e) => update({ area: Math.max(20, Number(e.target.value)) })}
-              className="w-full rounded-2xl border border-gray-300 px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+              onChange={(e) => update({ area: Number(e.target.value) })}
+              className="h-3 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-primary"
             />
-            <p className="text-xs text-gray-400">Nur Wohnfläche (ohne Keller/Garage)</p>
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>20 m²</span>
+              <span>100 m²</span>
+              <span>250 m²</span>
+            </div>
+            <p className="text-xs text-gray-400">Nur Wohnfläche ohne Keller oder Garage. Mit dem Slider kannst du den Wert schnell anpassen.</p>
           </div>
           <div className="space-y-3">
             <label className="block font-semibold text-gray-800">
@@ -467,6 +610,54 @@ export default function SparCheck() {
             <p className="mt-2 text-sm text-gray-600">pro Jahr – durch Tarifwechsel beim günstigsten Neukundentarif.</p>
           </div>
 
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="mb-5 flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-2xl">🔍</div>
+                <div>
+                  <p className="mb-0.5 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Weg 1</p>
+                  <h3 className="text-xl font-bold text-slate-900">Selbst vergleichen & wechseln</h3>
+                </div>
+              </div>
+              <p className="mb-6 text-sm leading-relaxed text-slate-500">
+                Du willst selbst den besten Tarif finden? Vergleiche auf den führenden Portalen und wechsle direkt. Der neue Anbieter kündigt für dich.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {selfCompareCards.map((card) => (
+                  <PortalCardUI
+                    key={card.name}
+                    card={card}
+                    accent="primary"
+                    onClick={() => trackAffiliateClick(card.name, 'self_compare', card.url)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="mb-5 flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-2xl">🤖</div>
+                <div>
+                  <p className="mb-0.5 text-xs font-bold uppercase tracking-[0.2em] text-primary">Weg 2</p>
+                  <h3 className="text-xl font-bold text-slate-900">Für mich erledigen lassen</h3>
+                </div>
+              </div>
+              <p className="mb-6 text-sm leading-relaxed text-slate-500">
+                Keine Lust auf Vergleichen? Diese Services wechseln deinen Tarif automatisch oder erinnern dich rechtzeitig. Kein Aufwand, kein Risiko.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {managedCards.map((card) => (
+                  <PortalCardUI
+                    key={card.name}
+                    card={card}
+                    accent="dark"
+                    onClick={() => trackAffiliateClick(card.name, 'managed_service', card.url)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Hinweis */}
           <div className="flex gap-3 items-start rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3">
             <span className="text-amber-500 text-sm mt-0.5 shrink-0">ℹ</span>
@@ -477,19 +668,27 @@ export default function SparCheck() {
           </div>
 
           {/* CTAs */}
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="space-y-3">
             <a
               href="/tarif-vergleich"
-              className="flex-1 bg-primary text-white rounded-2xl px-6 py-4 text-center font-semibold hover:bg-primary/90 transition"
+              onClick={() =>
+                trackEvent('spar_check_tarifvergleich_click', {
+                  heating: data.heating,
+                  zip_present: !!data.zip,
+                })
+              }
+              className="inline-flex items-center justify-center text-sm font-semibold text-secondary transition hover:text-secondary/80"
             >
-              Tarife vergleichen & sparen →
+              Weitere Anbieter im Tarif-Vergleich ansehen →
             </a>
-            <button
-              onClick={() => setStep(1)}
-              className="flex-1 bg-gray-100 text-secondary rounded-2xl px-6 py-4 font-semibold hover:bg-gray-200 transition"
-            >
-              Angaben anpassen
-            </button>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                onClick={() => setStep(1)}
+                className="flex-1 bg-gray-100 text-secondary rounded-2xl px-6 py-4 font-semibold hover:bg-gray-200 transition"
+              >
+                Angaben anpassen
+              </button>
+            </div>
           </div>
         </div>
       ),
@@ -519,7 +718,7 @@ export default function SparCheck() {
 
       {/* Wizard */}
       <section className="py-20 px-6">
-        <div className="max-w-3xl mx-auto">
+        <div className={`${isResultStep ? 'max-w-6xl' : 'max-w-3xl'} mx-auto`}>
 
           {/* Schritt-Indikator */}
           {showStepLabel && (

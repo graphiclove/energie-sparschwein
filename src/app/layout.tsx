@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
+import MicrosoftClarity from "@/components/MicrosoftClarity";
 
 export const metadata: Metadata = {
   title: "Energie-Sparschwein | Dein kostenloser Energie-Check",
@@ -9,9 +11,14 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
+
   return (
     <html lang="de" className="h-full antialiased">
       <body className="flex min-h-full flex-col bg-background text-foreground">
+        <GoogleAnalytics gaId={gaId} />
+        <MicrosoftClarity projectId={clarityId} />
         <Navbar />
 
         <div className="flex-1">{children}</div>

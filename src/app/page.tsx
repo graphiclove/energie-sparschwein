@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { trackEvent } from '@/lib/tracking';
 
 // ─── Daten ────────────────────────────────────────────────────────────────────
 const HOW_IT_WORKS = [
@@ -76,10 +77,25 @@ export default function Home() {
   const [zip,   setZip]   = useState('');
   const [email, setEmail] = useState('');
   const [sent,  setSent]  = useState(false);
+  const [zipError, setZipError] = useState('');
 
   const handleZipSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (zip.length === 5) window.location.href = `/spar-check?zip=${zip}`;
+    if (zip.length === 5) {
+      setZipError('');
+      trackEvent('homepage_sparcheck_start', {
+        zip,
+        entry_point: 'hero_zip_form',
+      });
+      window.location.href = `/spar-check?zip=${zip}`;
+      return;
+    }
+
+    trackEvent('homepage_zip_validation_error', {
+      zip_length: zip.length,
+      entry_point: 'hero_zip_form',
+    });
+    setZipError('Bitte gib zuerst eine gültige 5-stellige Postleitzahl ein.');
   };
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
@@ -119,7 +135,10 @@ export default function Home() {
               inputMode="numeric"
               placeholder="Deine Postleitzahl"
               value={zip}
-              onChange={(e) => setZip(e.target.value.replace(/\D/g, '').slice(0, 5))}
+              onChange={(e) => {
+                setZip(e.target.value.replace(/\D/g, '').slice(0, 5));
+                if (zipError) setZipError('');
+              }}
               maxLength={5}
               className="h-14 w-full rounded-2xl bg-white/10 px-6 text-center text-lg font-semibold text-white placeholder:text-slate-400 outline-none ring-1 ring-white/20 backdrop-blur-sm transition focus:bg-white/15 focus:ring-white/40 sm:w-52"
             />
@@ -130,6 +149,10 @@ export default function Home() {
               Spar-Check starten →
             </button>
           </form>
+
+          {zipError && (
+            <p className="mt-3 text-sm font-medium text-amber-300">{zipError}</p>
+          )}
 
           {/* Trust-Badges */}
           <div className="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm text-slate-400">

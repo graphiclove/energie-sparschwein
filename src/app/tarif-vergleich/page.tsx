@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import {
+  getManagedSwitchCards,
+  getSelfCompareCards,
+  type AffiliatePortalCard,
+  type HeatingType,
+} from '@/lib/affiliateRecommendations';
 
 // ─── Typen ────────────────────────────────────────────────────────────────────
-type HeatingType = 'gas' | 'oil' | 'pellets' | 'heatpump' | 'unknown';
-
 interface UserData {
   heating: HeatingType;
   area:    number;
@@ -13,6 +17,32 @@ interface UserData {
 }
 
 const DEFAULT_DATA: UserData = { heating: 'unknown', area: 120, persons: 2, zip: '' };
+
+function getInitialTarifVergleichData(): { data: UserData; hasData: boolean } {
+  if (typeof window === 'undefined') {
+    return { data: DEFAULT_DATA, hasData: false };
+  }
+
+  const saved = localStorage.getItem('sparCheckData');
+  if (!saved) {
+    return { data: DEFAULT_DATA, hasData: false };
+  }
+
+  try {
+    const p = JSON.parse(saved);
+    return {
+      data: {
+        heating: p.heating ?? 'unknown',
+        area:    Number(p.area)    || 120,
+        persons: Number(p.persons) || 2,
+        zip:     p.zip ?? '',
+      },
+      hasData: true,
+    };
+  } catch {
+    return { data: DEFAULT_DATA, hasData: false };
+  }
+}
 
 // ─── Preise (BDEW/Verivox 2026) ───────────────────────────────────────────────
 const P = {
@@ -67,115 +97,6 @@ function calcRows(data: UserData): TableRow[] {
   return rows;
 }
 
-// ─── Portal-Karten ────────────────────────────────────────────────────────────
-interface PortalCard {
-  name:           string;
-  taglines:       string[];
-  rating:         number;
-  url:            string;
-  buttonText:     string;
-  isRecommended?: boolean;
-}
-
-function getWeg1Cards(data: UserData): PortalCard[] {
-  const verivoxGasUrl   = `https://www.verivox.de/gasvergleich/?partner=6776&verbrauch=${Math.round(data.area * 140)}&haushaltgroesse=${data.persons}`;
-  const verivoxStromUrl = `https://www.verivox.de/stromvergleich/?partner=6776&verbrauch=${1500 + data.persons * 500}&haushaltgroesse=${data.persons}`;
-
-  if (data.heating === 'gas' || data.heating === 'unknown') {
-    return [
-      {
-        name:          'Verivox',
-        taglines:      ['930+ Anbieter · TÜV-geprüft · Testsieger', 'Bis zu 750 € Ersparnis'],
-        rating:        4.5,
-        url:           verivoxGasUrl,
-        buttonText:    'Gas vergleichen →',
-        isRecommended: true,
-      },
-      {
-        name:      'CHECK24',
-        taglines:  ['Testsieger Stiftung Warentest · Bis 400 € Bonus', 'Persönliche Beratung per Telefon'],
-        rating:    4.6,
-        url:       'https://www.check24.de/gas/',
-        buttonText: 'Gas vergleichen →',
-      },
-    ];
-  }
-  if (data.heating === 'oil') {
-    return [
-      {
-        name:          'HeizOel24',
-        taglines:      ['500+ Händler im Vergleich', 'Testsieger 2024 · 20+ Jahre Erfahrung'],
-        rating:        4.7,
-        url:           'https://www.heizoel24.de/',
-        buttonText:    'Heizöl vergleichen →',
-        isRecommended: true,
-      },
-      {
-        name:      'esyoil',
-        taglines:  ['800+ Händler deutschlandweit', 'Stiftung Warentest: Sehr gut'],
-        rating:    4.5,
-        url:       'https://www.esyoil.com/',
-        buttonText: 'Heizöl vergleichen →',
-      },
-    ];
-  }
-  if (data.heating === 'pellets') {
-    return [
-      {
-        name:          'HeizPellets24',
-        taglines:      ['Größter Pellets-Marktplatz DE', '500+ Händler · ENplus A1 Qualität'],
-        rating:        4.6,
-        url:           'https://www.heizpellets24.de/',
-        buttonText:    'Pellets vergleichen →',
-        isRecommended: true,
-      },
-      {
-        name:      'Verivox Strom',
-        taglines:  ['800+ Stromanbieter', 'Ø 180 € Ersparnis p.a.'],
-        rating:    4.5,
-        url:       verivoxStromUrl,
-        buttonText: 'Strom vergleichen →',
-      },
-    ];
-  }
-  // heatpump
-  return [
-    {
-      name:          'Verivox Heizstrom',
-      taglines:      ['Spezialtarife für Wärmepumpen', 'Ø 20–30% günstiger als Normaltarif'],
-      rating:        4.5,
-      url:           `https://www.verivox.de/heizstromvergleich/?partner=6776&verbrauch=${data.area * 35}`,
-      buttonText:    'Heizstrom vergleichen →',
-      isRecommended: true,
-    },
-    {
-      name:      'CHECK24 Heizstrom',
-      taglines:  ['Wärmepumpen-Spezialtarife', 'Schnell & kostenlos wechseln'],
-      rating:    4.6,
-      url:       'https://www.check24.de/heizstrom/',
-      buttonText: 'Heizstrom vergleichen →',
-    },
-  ];
-}
-
-const WEG2_CARDS: PortalCard[] = [
-  {
-    name:          'Wechselpilot',
-    taglines:      ['Automatischer Wechsel jedes Jahr', 'Kostenlos wenn keine Ersparnis', 'Bekannt aus: Handelsblatt, Focus, ARD'],
-    rating:        4.4,
-    url:           'https://www.wechselpilot.com/',
-    buttonText:    'Jetzt anmelden – automatisch sparen →',
-    isRecommended: true,
-  },
-  {
-    name:      'remind.me',
-    taglines:  ['Erinnert dich an den besten Wechselzeitpunkt', 'Komplett kostenlos', 'Über 1 Mio. Nutzer'],
-    rating:    4.2,
-    url:       'https://www.remind.me/',
-    buttonText: 'Kostenlos erinnern lassen →',
-  },
-];
-
 // ─── Spar-Tipp ────────────────────────────────────────────────────────────────
 function getSparTipp(data: UserData): { title: string; body: string; cta?: { text: string; href: string } } {
   if (data.heating === 'gas') {
@@ -225,7 +146,7 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 // ─── Portal-Karte ─────────────────────────────────────────────────────────────
-function PortalCardUI({ card }: { card: PortalCard }) {
+function PortalCardUI({ card }: { card: AffiliatePortalCard }) {
   return (
     <div className={`relative flex flex-col rounded-2xl border p-5 transition hover:-translate-y-0.5 hover:shadow-md ${
       card.isRecommended ? 'border-primary/30 bg-white shadow-md shadow-primary/5' : 'border-slate-200 bg-slate-50/80'
@@ -275,30 +196,26 @@ const HEATING_LABELS: Record<HeatingType, string> = {
 
 // ─── Hauptkomponente ──────────────────────────────────────────────────────────
 export default function TarifVergleich() {
-  const [data, setData]     = useState<UserData>(DEFAULT_DATA);
-  const [hasData, setHasData] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('sparCheckData');
-    if (saved) {
-      try {
-        const p = JSON.parse(saved);
-        setData({
-          heating: p.heating ?? 'unknown',
-          area:    Number(p.area)    || 120,
-          persons: Number(p.persons) || 2,
-          zip:     p.zip ?? '',
-        });
-        setHasData(true);
-      } catch { /* ignore */ }
-    }
-  }, []);
+  const initialState = getInitialTarifVergleichData();
+  const [data] = useState<UserData>(initialState.data);
+  const [hasData] = useState(initialState.hasData);
 
   const rows       = calcRows(data);
   const totalAlt   = rows.reduce((s, r) => s + r.alt, 0);
   const totalNeu   = rows.reduce((s, r) => s + r.neu, 0);
   const totalSaving = totalAlt - totalNeu;
-  const weg1Cards  = getWeg1Cards(data);
+  const weg1Cards  = getSelfCompareCards({
+    heating: data.heating,
+    area: data.area,
+    persons: data.persons,
+    zip: data.zip,
+  });
+  const weg2Cards = getManagedSwitchCards({
+    heating: data.heating,
+    area: data.area,
+    persons: data.persons,
+    zip: data.zip,
+  });
   const sparTipp   = getSparTipp(data);
 
   return (
@@ -444,7 +361,7 @@ export default function TarifVergleich() {
                 Keine Lust auf Vergleichen? Diese Services wechseln deinen Tarif automatisch – jedes Jahr aufs Neue. Kein Aufwand, kein Risiko.
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
-                {WEG2_CARDS.map((card) => <PortalCardUI key={card.name} card={card} />)}
+                {weg2Cards.map((card) => <PortalCardUI key={card.name} card={card} />)}
               </div>
             </div>
 
