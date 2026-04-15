@@ -196,6 +196,7 @@ export default function Home() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [pauseTestimonials, setPauseTestimonials] = useState(false);
   const hasMountedTestimonials = useRef(false);
+  const testimonialTrackRef = useRef<HTMLDivElement | null>(null);
   const testimonialCardRefs = useRef<Array<HTMLElement | null>>([]);
 
   useEffect(() => {
@@ -214,13 +215,13 @@ export default function Home() {
       return;
     }
 
+    const track = testimonialTrackRef.current;
     const target = testimonialCardRefs.current[activeTestimonial];
-    if (!target) return;
+    if (!track || !target) return;
 
-    target.scrollIntoView({
+    track.scrollTo({
+      left: target.offsetLeft - track.offsetLeft,
       behavior: 'smooth',
-      block: 'nearest',
-      inline: 'start',
     });
   }, [activeTestimonial]);
 
@@ -573,6 +574,7 @@ export default function Home() {
             </button>
 
             <div
+              ref={testimonialTrackRef}
               className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               onMouseEnter={() => setPauseTestimonials(true)}
               onMouseLeave={() => setPauseTestimonials(false)}
