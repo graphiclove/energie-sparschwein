@@ -195,6 +195,7 @@ export default function Home() {
   const [zipError, setZipError] = useState('');
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [pauseTestimonials, setPauseTestimonials] = useState(false);
+  const hasMountedTestimonials = useRef(false);
   const testimonialCardRefs = useRef<Array<HTMLElement | null>>([]);
 
   useEffect(() => {
@@ -208,6 +209,11 @@ export default function Home() {
   }, [pauseTestimonials]);
 
   useEffect(() => {
+    if (!hasMountedTestimonials.current) {
+      hasMountedTestimonials.current = true;
+      return;
+    }
+
     const target = testimonialCardRefs.current[activeTestimonial];
     if (!target) return;
 
