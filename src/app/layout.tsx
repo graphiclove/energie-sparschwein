@@ -62,9 +62,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <ul className="space-y-2.5 text-sm text-slate-400">
                   {[
                     { label: 'Heizkosten senken', href: '/ratgeber/heizkosten-senken' },
-                    { label: 'Gaspreise 2026',    href: '/' },
-                    { label: 'Pellets vs. Gas',   href: '/' },
-                    { label: 'Mieter-Guide',      href: '/' },
+                    { label: 'Gaspreise 2026',    href: '/ratgeber/gaspreise-2026' },
+                    { label: 'Pellets vs. Gas',   href: '/ratgeber/pellets-vs-gas' },
+                    { label: 'CO₂-Steuer 2026',   href: '/ratgeber/co2-steuer-2026' },
                   ].map(({ label, href }) => (
                     <li key={label}>
                       <Link href={href} className="transition hover:text-white">{label}</Link>

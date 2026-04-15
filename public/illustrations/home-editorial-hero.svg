@@ -1,0 +1,17 @@
+<svg width="960" height="840" viewBox="0 0 960 840" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="960" height="840" rx="56" fill="#F5EFE5"/>
+  <circle cx="268" cy="664" r="226" fill="#75E6E0"/>
+  <circle cx="808" cy="152" r="108" stroke="#C8CFD6" stroke-width="3"/>
+  <circle cx="140" cy="180" r="180" stroke="#D8DEE4" stroke-width="2"/>
+  <path d="M286 272C286 185.961 355.737 116 441.5 116C527.263 116 597 185.961 597 272V412H286V272Z" stroke="#1E293B" stroke-width="8"/>
+  <path d="M336 338C350.589 302.47 385.663 282 428.5 282C471.337 282 506.411 302.47 521 338" stroke="#1E293B" stroke-width="8" stroke-linecap="round"/>
+  <path d="M257 820C264.767 711.872 292.468 632.093 340.102 579.843C359.693 558.356 383.99 546 407.999 546C432.009 546 456.306 558.356 475.896 579.843C523.531 632.093 551.232 711.872 559 820" stroke="#1E293B" stroke-width="9" stroke-linecap="round"/>
+  <path d="M372 564C388.665 588.493 407.498 601 428.5 601C449.502 601 468.335 588.493 485 564" stroke="#1E293B" stroke-width="8" stroke-linecap="round"/>
+  <path d="M627 570C675.694 545.546 727.878 533.319 782.5 533.319C817.469 533.319 845.709 505.108 845.709 470.173V384.653C845.709 354.191 870.34 329.5 900.736 329.5C931.131 329.5 955.762 354.191 955.762 384.653V497.766H960V350.078C960 316.92 986.814 290 1019.9 290C1052.99 290 1079.8 316.92 1079.8 350.078V497.766H1087V388.499C1087 357.97 1111.69 333.223 1142.15 333.223C1172.62 333.223 1197.31 357.97 1197.31 388.499V502.859C1197.31 549.541 1184.59 593.242 1159.15 632.859" stroke="#4DBCB5" stroke-width="0"/>
+  <path d="M110 716C193.275 657.766 295.5 627.522 401.225 629.217" stroke="#0F172A" stroke-width="4" stroke-linecap="round" opacity="0.16"/>
+  <path d="M650 650C697.026 650 735.146 611.958 735.146 565.031C735.146 518.105 697.026 480.063 650 480.063C602.974 480.063 564.854 518.105 564.854 565.031C564.854 611.958 602.974 650 650 650Z" fill="white" fill-opacity="0.78" stroke="#E6EAEE" stroke-width="3"/>
+  <path d="M623 562L641.5 580L680 541.5" stroke="#1E293B" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="621" y="687" width="230" height="94" rx="30" fill="white" fill-opacity="0.9" stroke="#E5E7EB" stroke-width="3"/>
+  <text x="654" y="727" fill="#94A3B8" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="3.52">BEISPIEL</text>
+  <text x="654" y="764" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700">4 Fragen, ein klarer nächster Schritt</text>
+</svg>

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 
 // ─── Menü-Konfiguration ───────────────────────────────────────────────────────
 interface NavLink {
-  icon:   string;
+  icon:   'spark' | 'chart' | 'calc' | 'home' | 'shower' | 'fuel' | 'plug' | 'globe' | 'pellets';
   label:  string;
   desc:   string;
   href:   string;
@@ -23,37 +23,124 @@ const NAV: NavItem[] = [
   {
     label: 'Energie sparen',
     left: [
-      { icon: '🔥', label: 'Spar-Check',           desc: 'In 3 Min. dein Sparpotenzial berechnen', href: '/spar-check' },
-      { icon: '⚖️', label: 'Brennstoff-Vergleich', desc: 'Gas, Öl, Pellets & Wärmepumpe',          href: '/kommt-bald', badge: 'Bald' },
-      { icon: '📊', label: 'Tarif-Vergleich',       desc: 'Beste Anbieter für deine Situation',     href: '/tarif-vergleich' },
+      { icon: 'spark', label: 'Spar-Check',            desc: 'In 3 Min. dein Sparpotenzial berechnen', href: '/spar-check' },
+      { icon: 'chart', label: 'Tarif-Vergleich',       desc: 'Beste Anbieter für deine Situation',     href: '/tarif-vergleich' },
+      { icon: 'calc', label: 'Preisrechner',          desc: 'Heizung, Strom und Mobilität berechnen', href: '/preisrechner' },
     ],
     right: [
-      { icon: '📈', label: 'Gaspreise 2026',    desc: 'Aktuelle Preistrends & Prognosen',  href: '/kommt-bald', badge: 'Bald' },
-      { icon: '🏠', label: 'Heizkosten senken', desc: 'Praktische Spar-Tipps für zuhause', href: '/ratgeber/heizkosten-senken' },
+      { icon: 'home', label: 'Heizkosten senken',    desc: 'Praktische Spar-Tipps für zuhause', href: '/ratgeber/heizkosten-senken' },
+      { icon: 'shower', label: 'Dusch-Rechner',        desc: 'Was kostet dein Duschverhalten?',   href: '/tools/dusch-rechner' },
     ],
   },
   {
     label: 'Tools',
     left: [
-      { icon: '⛽', label: 'Günstig Tanken', desc: 'Tankstellen in deiner Nähe',       href: '/guenstig-tanken' },
-      { icon: '🚿', label: 'Dusch-Rechner',  desc: 'Was kostet dein Duschverhalten?',  href: '/tools/dusch-rechner' },
-      { icon: '🔌', label: 'Geräte-Check',    desc: 'Lohnt sich ein neues Gerät?',       href: '/tools/geraete-check' },
+      { icon: 'fuel', label: 'Günstig Tanken',  desc: 'Tankstellen in deiner Nähe',        href: '/guenstig-tanken' },
+      { icon: 'shower', label: 'Dusch-Rechner',   desc: 'Was kostet dein Duschverhalten?',   href: '/tools/dusch-rechner' },
+      { icon: 'plug', label: 'Geräte-Check',    desc: 'Lohnt sich ein neues Gerät?',       href: '/tools/geraete-check' },
     ],
   },
   {
     label: 'Ratgeber',
+    href: '/ratgeber',
     left: [
-      { icon: '📈', label: 'Gaspreise 2026',     desc: 'Entwicklung und Ausblick',     href: '/kommt-bald', badge: 'Bald' },
-      { icon: '🏢', label: 'Mieter-Guide',        desc: 'Energie sparen als Mieter',    href: '/kommt-bald', badge: 'Bald' },
-      { icon: '🌍', label: 'CO₂-Steuer erklärt', desc: 'Was das für dich bedeutet',    href: '/kommt-bald', badge: 'Bald' },
+      { icon: 'chart', label: 'Gaspreise 2026',      desc: 'Preistreiber und was jetzt zählt', href: '/ratgeber/gaspreise-2026' },
+      { icon: 'globe', label: 'CO₂-Steuer 2026',     desc: 'Was sich 2026 ändert', href: '/ratgeber/co2-steuer-2026' },
+      { icon: 'home', label: 'Heizkosten senken',   desc: 'Sofort-Tipps und Förderungen',  href: '/ratgeber/heizkosten-senken' },
     ],
     right: [
-      { icon: '🌰', label: 'Pellets vs. Gas',       desc: 'Kostenvergleich 2026',            href: '/kommt-bald', badge: 'Bald' },
-      { icon: '⚡', label: 'Gasanbieter insolvent', desc: 'Deine Rechte & nächste Schritte', href: '/kommt-bald', badge: 'Bald' },
+      { icon: 'pellets', label: 'Pellets vs. Gas',      desc: 'Was lohnt sich 2026 eher?', href: '/ratgeber/pellets-vs-gas' },
+      { icon: 'plug', label: 'Geräte-Check',         desc: 'Energiefresser im Haushalt finden', href: '/tools/geraete-check' },
     ],
   },
   { label: 'Über uns', href: '/ueber-uns' },
 ];
+
+function NavIcon({ kind }: { kind: NavLink['icon'] }) {
+  const props = {
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.75,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    className: 'h-5 w-5',
+  };
+
+  switch (kind) {
+    case 'spark':
+      return (
+        <svg {...props}>
+          <path d="M13 2 7 12h4l-1 10 7-11h-4V2Z" />
+        </svg>
+      );
+    case 'chart':
+      return (
+        <svg {...props}>
+          <path d="M4 19h16" />
+          <path d="M7 15V9" />
+          <path d="M12 15V5" />
+          <path d="M17 15v-3" />
+        </svg>
+      );
+    case 'calc':
+      return (
+        <svg {...props}>
+          <rect x="5" y="3" width="14" height="18" rx="2.5" />
+          <path d="M8 7h8" />
+          <path d="M8 11h2M14 11h2M8 15h2M14 15h2M8 19h8" />
+        </svg>
+      );
+    case 'home':
+      return (
+        <svg {...props}>
+          <path d="M3.5 10.5 12 3l8.5 7.5" />
+          <path d="M6 9.5V20h12V9.5" />
+          <path d="M10 20v-5h4v5" />
+        </svg>
+      );
+    case 'shower':
+      return (
+        <svg {...props}>
+          <path d="M6 8a5 5 0 0 1 10 0v1H6Z" />
+          <path d="M16 9v2.5" />
+          <path d="M10 13v1M13 13.5v1M16 14v1M9 16v1M12 16.5v1M15 17v1" />
+        </svg>
+      );
+    case 'fuel':
+      return (
+        <svg {...props}>
+          <path d="M7 6h7a2 2 0 0 1 2 2v10H7z" />
+          <path d="M9 6V4h4v2" />
+          <path d="M16 8h1.5l2.5 2.5V16a1.5 1.5 0 0 1-3 0v-2" />
+        </svg>
+      );
+    case 'plug':
+      return (
+        <svg {...props}>
+          <path d="M9 3v6M15 3v6" />
+          <path d="M7 8h10v2a5 5 0 0 1-5 5 5 5 0 0 1-5-5V8Z" />
+          <path d="M12 15v6" />
+        </svg>
+      );
+    case 'globe':
+      return (
+        <svg {...props}>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M3.8 12h16.4" />
+          <path d="M12 3.5c2.6 2.4 4 5.2 4 8.5s-1.4 6.1-4 8.5c-2.6-2.4-4-5.2-4-8.5s1.4-6.1 4-8.5Z" />
+        </svg>
+      );
+    case 'pellets':
+      return (
+        <svg {...props}>
+          <path d="M7 8.5c0-2.8 2.4-5 5.3-5 2.3 0 4.2 1.2 5.1 3.2" />
+          <path d="M9 13.5c0-2 1.8-3.5 4-3.5s4 1.5 4 3.5-1.8 3.5-4 3.5-4-1.5-4-3.5Z" />
+          <path d="M5 17c0-1.7 1.4-3 3.2-3 1.7 0 3.1 1.3 3.1 3s-1.4 3-3.1 3C6.4 20 5 18.7 5 17Z" />
+        </svg>
+      );
+  }
+}
 
 // ─── Dropdown-Link ────────────────────────────────────────────────────────────
 function DropdownLink({ item, onClick }: { item: NavLink; onClick?: () => void }) {
@@ -63,7 +150,9 @@ function DropdownLink({ item, onClick }: { item: NavLink; onClick?: () => void }
       onClick={onClick}
       className="group/link flex items-start gap-3 rounded-xl px-3 py-2.5 transition hover:bg-slate-50"
     >
-      <span className="mt-0.5 w-7 shrink-0 text-xl">{item.icon}</span>
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition group-hover/link:bg-slate-200">
+        <NavIcon kind={item.icon} />
+      </span>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-semibold text-slate-800 transition group-hover/link:text-primary">
@@ -117,8 +206,10 @@ export default function Navbar() {
 
   const hasDropdown = (item: NavItem) => !!(item.left || item.right);
 
-  // Transparent → dark when scrolled (always white text on dark background)
-  const navBg     = scrolled ? 'bg-[#0f172a] shadow-md border-b border-slate-800' : 'bg-transparent';
+  // Keep the navbar dark over hero imagery, then make it denser on scroll.
+  const navBg     = scrolled
+    ? 'bg-[#0f172a]/96 shadow-md border-b border-slate-800 backdrop-blur-xl'
+    : 'bg-[#0f172a]/72 border-b border-white/10 backdrop-blur-md';
   const linkColor = 'text-white/80 hover:text-white hover:bg-white/10';
   const linkActive = 'bg-white/10 text-white';
 
@@ -143,19 +234,25 @@ export default function Navbar() {
                   onMouseEnter={() => enter(item.label)}
                   onMouseLeave={leave}
                 >
-                  <button
+                  <div
                     className={`flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
                       openMenu === item.label ? linkActive : linkColor
                     }`}
                   >
-                    {item.label}
+                    {item.href ? (
+                      <Link href={item.href} className="focus:outline-none">
+                        {item.label}
+                      </Link>
+                    ) : (
+                      item.label
+                    )}
                     <svg
                       className={`h-3.5 w-3.5 text-white/50 transition-transform duration-200 ${openMenu === item.label ? 'rotate-180' : ''}`}
                       fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
-                  </button>
+                  </div>
 
                   {/* Dropdown-Panel */}
                   <div
