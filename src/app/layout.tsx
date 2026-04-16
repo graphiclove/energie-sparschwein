@@ -5,10 +5,11 @@ import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import MicrosoftClarity from "@/components/MicrosoftClarity";
+import PriceWatcherWidget from "@/components/PriceWatcherWidget";
 
 export const metadata: Metadata = {
-  title: "Energie-Sparschwein | Dein kostenloser Energie-Check",
-  description: "Finde heraus, wo du bei Gas, Strom, Heizöl und Sprit draufzahlst. Kostenloser Spar-Check in 60 Sekunden.",
+  title: "Energie-Sparschwein – Dein Kosten-Dolmetscher für Energie",
+  description: "Kein Tarif-Dschungel. In einer Minute zum Sparpfad für deinen Haushalt. Verständlich, unabhängig, kostenlos.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Suspense>
         <MicrosoftClarity projectId={clarityId} />
         <Navbar />
+        <PriceWatcherWidget />
 
         <div className="flex-1">{children}</div>
 
@@ -36,6 +38,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <p className="text-lg font-bold">Energie-Sparschwein</p>
                 <p className="mt-3 max-w-xs text-sm leading-relaxed text-slate-400">
                   Dein unabhängiger Kosten-Dolmetscher für Energie. Kostenlos, transparent, ohne Agenda.
+                </p>
+                <p className="mt-2 max-w-xs text-sm leading-relaxed text-slate-500">
+                  Sparpfad statt Preisliste. Begleitung statt Vermittlung.
                 </p>
                 <p className="mt-5 text-xs text-slate-600">
                   Affiliate-Hinweis: Wir erhalten ggf. Provisionen bei Tarifwechseln über unsere Links. Für dich entstehen keine Mehrkosten.

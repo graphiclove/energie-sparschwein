@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { subscribeToPriceWatcher } from '@/lib/priceWatcher';
 import { trackEvent } from '@/lib/tracking';
 
 const HOW_IT_WORKS = [
@@ -122,7 +123,7 @@ const TESTIMONIALS = [
   },
   {
     topic: 'Preis-Wächter',
-    topicHref: '/newsletter',
+    topicHref: '/#preis-waechter',
     headline: 'Wir mussten nicht sofort wechseln, aber wir hatten den Markt wieder im Blick.',
     body:
       'Der Preis-Wächter war genau richtig für uns, weil wir erst einmal abwarten wollten. So war das Thema wieder sortiert, ohne direkt einen Vertrag abschließen zu müssen.',
@@ -192,6 +193,8 @@ export default function Home() {
   const [zip, setZip] = useState('');
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterMessage, setNewsletterMessage] = useState('');
   const [zipError, setZipError] = useState('');
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [pauseTestimonials, setPauseTestimonials] = useState(false);
@@ -246,7 +249,23 @@ export default function Home() {
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.includes('@')) setSent(true);
+    void (async () => {
+      setNewsletterLoading(true);
+      setNewsletterMessage('');
+
+      const result = await subscribeToPriceWatcher({
+        email,
+        source: 'homepage_price_watcher',
+      });
+
+      setNewsletterLoading(false);
+      setNewsletterMessage(result.message ?? '');
+
+      if (result.ok) {
+        setSent(true);
+        setEmail('');
+      }
+    })();
   };
 
   return (
@@ -274,15 +293,16 @@ export default function Home() {
                 Energie Sparschwein
               </p>
               <h1 className="mt-6 max-w-3xl text-5xl font-bold leading-[0.92] tracking-[-0.05em] text-balance sm:text-6xl lg:text-7xl">
-                Prüfe in einer Minute,
+                In einer Minute
                 <br />
-                <span className="text-primary">wo dein Zuhause</span>
+                zum <span className="text-primary">Sparpfad</span>
                 <br />
-                unnötig draufzahlt.
+                für dein Zuhause.
               </h1>
 
               <p className="mt-7 max-w-xl text-lg leading-8 text-slate-600 md:text-xl">
-                Starte mit deiner Postleitzahl und wir zeigen dir, welche Energie-Entscheidungen für deinen Haushalt jetzt wirklich relevant sind.
+                Kein Tarif-Dschungel. Kein Verkaufsdruck. Wir zeigen dir, welche Energie-Entscheidungen für deinen
+                Haushalt jetzt wirklich relevant sind – und in welcher Reihenfolge.
               </p>
 
               <form onSubmit={handleZipSubmit} className="mt-10 max-w-2xl">
@@ -415,6 +435,25 @@ export default function Home() {
               </Link>
             ))}
           </div>
+
+          <div className="mt-5 overflow-hidden rounded-[2rem] border border-primary/15 bg-[#e9f4ec] shadow-[0_25px_80px_-65px_rgba(15,23,42,0.2)]">
+            <div className="grid gap-6 px-8 py-8 lg:grid-cols-[0.8fr_1.2fr_auto] lg:items-center">
+              <div>
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-primary">Dauerhaft</p>
+                <h3 className="mt-3 text-3xl font-bold tracking-[-0.04em] text-slate-950">Preis-Wächter</h3>
+              </div>
+              <p className="max-w-3xl text-base leading-7 text-slate-700">
+                Wenn du nicht sofort wechseln willst – wir beobachten den Markt für dich und informieren dich, sobald
+                sich ein Wechsel lohnt.
+              </p>
+              <Link
+                href="#preis-waechter"
+                className="inline-flex items-center justify-center rounded-[1.2rem] bg-primary px-6 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-primary/90"
+              >
+                Preis-Wächter aktivieren →
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -477,7 +516,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[#13263b] px-6 py-24 text-white">
+      <section id="preis-waechter" className="relative overflow-hidden bg-[#13263b] px-6 py-24 text-white">
         <div className="pointer-events-none absolute inset-0 opacity-70">
           <div className="relative h-full w-full">
             <Image
@@ -508,7 +547,9 @@ export default function Home() {
               {sent ? (
                 <div className="rounded-[2rem] border border-primary/30 bg-primary/10 px-8 py-7 text-[#d9f3df]">
                   <p className="text-xl font-semibold">Angemeldet! ✓</p>
-                  <p className="mt-2 text-sm text-[#d9f3df]/80">Wir melden uns, sobald Preise wieder attraktiver werden.</p>
+                  <p className="mt-2 text-sm text-[#d9f3df]/80">
+                    {newsletterMessage || 'Wir melden uns, sobald Preise wieder attraktiver werden.'}
+                  </p>
                 </div>
               ) : (
                 <form onSubmit={handleNewsletterSubmit} className="rounded-[2rem] bg-white p-3 shadow-[0_25px_80px_-60px_rgba(0,0,0,0.35)]">
@@ -523,11 +564,15 @@ export default function Home() {
                     />
                     <button
                       type="submit"
+                      disabled={newsletterLoading}
                       className="h-14 rounded-[1.25rem] bg-primary px-8 font-semibold whitespace-nowrap text-slate-950 transition hover:bg-primary/90 md:min-w-[12rem]"
                     >
-                      Jetzt anmelden
+                      {newsletterLoading ? 'Wird aktiviert ...' : 'Jetzt anmelden'}
                     </button>
                   </div>
+                  {newsletterMessage && (
+                    <p className="px-2 pt-3 text-sm font-medium text-slate-600">{newsletterMessage}</p>
+                  )}
                 </form>
               )}
 

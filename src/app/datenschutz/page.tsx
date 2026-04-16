@@ -37,7 +37,7 @@ export default function Datenschutz() {
               <p>
                 Wenn du unseren Newsletter abonnierst, wird deine E-Mail-Adresse verarbeitet, um dir Preisbenachrichtigungen zu senden.
                 Du kannst dich jederzeit über den Abmeldelink im Newsletter austragen. Wir nutzen Brevo (ehemals Sendinblue) als
-                Versanddienstleister; es gilt deren Datenschutzerklärung.
+                Versanddienstleister; je nach Einrichtung erfolgt die Anmeldung per Double-Opt-In. Es gilt deren Datenschutzerklärung.
               </p>
             </div>
 
