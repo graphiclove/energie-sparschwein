@@ -19,7 +19,7 @@ export default function UeberUns() {
             Wir sind dein Kosten-Dolmetscher.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
-            Energie-Sparschwein hilft Haushalten, Energiekosten erst zu verstehen und dann die richtigen nächsten
+            Wechselbiber hilft Haushalten, Energiekosten erst zu verstehen und dann die richtigen nächsten
             Schritte zu wählen.
           </p>
         </div>

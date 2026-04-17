@@ -122,7 +122,7 @@ export default function DuschRechner() {
       `Meine Dusche kostet ${fmtEur(result.costPerShower)} pro Duschgang.\n` +
       `Das macht ${fmtEur(result.costPerYear, 0)} im Jahr ` +
       `(${duration} Min, ${temp}°C, ${heatingLabel}, ${freqPerWeek}× pro Woche).\n` +
-      `Berechnet mit Energie-Sparschwein → energie-sparschwein.de/tools/dusch-rechner`;
+      `Berechnet mit Wechselbiber → wechselbiber.de/tools/dusch-rechner`;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);

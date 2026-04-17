@@ -62,7 +62,7 @@ export default function Datenschutz() {
 
             <div>
               <h2 className="text-lg font-bold text-slate-900 mb-2">5. Kontakt</h2>
-              <p>Bei Datenschutzfragen: hallo@energie-sparschwein.de</p>
+              <p>Bei Datenschutzfragen: hallo@wechselbiber.de</p>
               <p className="mt-2 text-sm text-slate-400">Stand: April 2026 (Platzhalter – vor Livegang durch Rechtsanwalt prüfen lassen)</p>
             </div>
 

@@ -290,7 +290,7 @@ export default function Home() {
             <div className="relative z-10 grid xl:grid-cols-[0.82fr_1.18fr]">
               <div className="px-7 py-10 md:px-10 md:py-12 xl:px-12 xl:py-14">
               <p className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">
-                Energie Sparschwein
+                Wechselbiber
               </p>
               <h1 className="mt-6 max-w-3xl text-5xl font-bold leading-[0.92] tracking-[-0.05em] text-balance sm:text-6xl lg:text-7xl">
                 In einer Minute

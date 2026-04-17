@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
@@ -220,8 +221,19 @@ export default function Navbar() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-6">
 
           {/* Logo */}
-          <Link href="/" className="shrink-0 text-lg font-bold text-white transition hover:opacity-80">
-            Energie&#8209;Sparschwein
+          <Link
+            href="/"
+            className="flex shrink-0 items-center transition hover:opacity-80"
+            aria-label="Wechselbiber Startseite"
+          >
+            <Image
+              src="/brand/wechselbiber-logo-white.png"
+              alt="Wechselbiber"
+              width={196}
+              height={32}
+              priority
+              className="h-8 w-auto"
+            />
           </Link>
 
           {/* Desktop-Nav-Items */}
