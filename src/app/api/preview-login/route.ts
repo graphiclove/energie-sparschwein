@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const expectedPassword = process.env.SITE_PASSWORD;
 
   if (!expectedPassword) {
-    return NextResponse.redirect(new URL(next, request.url));
+    return NextResponse.redirect(new URL(next, request.url), { status: 303 });
   }
 
   if (password !== expectedPassword) {
@@ -18,10 +18,12 @@ export async function POST(request: Request) {
     if (next.startsWith("/")) {
       loginUrl.searchParams.set("next", next);
     }
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(loginUrl, { status: 303 });
   }
 
-  const response = NextResponse.redirect(new URL(next.startsWith("/") ? next : "/", request.url));
+  const response = NextResponse.redirect(new URL(next.startsWith("/") ? next : "/", request.url), {
+    status: 303,
+  });
   response.cookies.set(ACCESS_COOKIE, "granted", {
     httpOnly: true,
     sameSite: "lax",
