@@ -227,7 +227,7 @@ export default function Navbar() {
             aria-label="Wechselbiber Startseite"
           >
             <Image
-              src="/brand/wechselbiber-logo-white.png"
+              src="/brand/wechselbiber-logo-white-transparent.png"
               alt="Wechselbiber"
               width={196}
               height={32}
