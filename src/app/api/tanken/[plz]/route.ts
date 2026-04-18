@@ -155,7 +155,7 @@ export async function GET(
 
       try {
         const response = await fetch(url, {
-          headers: { 'User-Agent': 'Energie-Sparschwein/1.0' }
+          headers: { 'User-Agent': 'Wechselbiber/1.0' }
         });
 
         if (response.ok) {

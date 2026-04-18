@@ -12,11 +12,11 @@ export default function Impressum() {
           <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm space-y-6 text-slate-600 leading-relaxed">
             <div>
               <h2 className="text-lg font-bold text-slate-900 mb-2">Angaben gemäß § 5 TMG</h2>
-              <p>Energie-Sparschwein<br />Platzhalter GmbH<br />Musterstraße 1<br />12345 Musterstadt</p>
+              <p>Wechselbiber<br />Platzhalter GmbH<br />Musterstraße 1<br />12345 Musterstadt</p>
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-900 mb-2">Kontakt</h2>
-              <p>E-Mail: hallo@energie-sparschwein.de</p>
+              <p>E-Mail: hallo@wechselbiber.de</p>
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-900 mb-2">Verantwortlich für den Inhalt (§ 55 Abs. 2 RStV)</h2>

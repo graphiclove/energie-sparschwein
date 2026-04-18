@@ -1,18 +1,30 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
+import MicrosoftClarity from "@/components/MicrosoftClarity";
+import PriceWatcherWidget from "@/components/PriceWatcherWidget";
 
 export const metadata: Metadata = {
-  title: "Energie-Sparschwein | Dein kostenloser Energie-Check",
-  description: "Finde heraus, wo du bei Gas, Strom, Heizöl und Sprit draufzahlst. Kostenloser Spar-Check in 60 Sekunden.",
+  title: "Wechselbiber – Dein Kosten-Dolmetscher für Energie",
+  description: "Kein Tarif-Dschungel. In einer Minute zum Sparpfad für deinen Haushalt. Verständlich, unabhängig, kostenlos.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
+
   return (
     <html lang="de" className="h-full antialiased">
       <body className="flex min-h-full flex-col bg-background text-foreground">
+        <Suspense fallback={null}>
+          <GoogleAnalytics gaId={gaId} />
+        </Suspense>
+        <MicrosoftClarity projectId={clarityId} />
         <Navbar />
+        <PriceWatcherWidget />
 
         <div className="flex-1">{children}</div>
 
@@ -23,9 +35,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               {/* Brand */}
               <div>
-                <p className="text-lg font-bold">Energie-Sparschwein</p>
+                <p className="text-lg font-bold">Wechselbiber</p>
                 <p className="mt-3 max-w-xs text-sm leading-relaxed text-slate-400">
                   Dein unabhängiger Kosten-Dolmetscher für Energie. Kostenlos, transparent, ohne Agenda.
+                </p>
+                <p className="mt-2 max-w-xs text-sm leading-relaxed text-slate-500">
+                  Sparpfad statt Preisliste. Begleitung statt Vermittlung.
                 </p>
                 <p className="mt-5 text-xs text-slate-600">
                   Affiliate-Hinweis: Wir erhalten ggf. Provisionen bei Tarifwechseln über unsere Links. Für dich entstehen keine Mehrkosten.
@@ -55,9 +70,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <ul className="space-y-2.5 text-sm text-slate-400">
                   {[
                     { label: 'Heizkosten senken', href: '/ratgeber/heizkosten-senken' },
-                    { label: 'Gaspreise 2026',    href: '/' },
-                    { label: 'Pellets vs. Gas',   href: '/' },
-                    { label: 'Mieter-Guide',      href: '/' },
+                    { label: 'Gaspreise 2026',    href: '/ratgeber/gaspreise-2026' },
+                    { label: 'Pellets vs. Gas',   href: '/ratgeber/pellets-vs-gas' },
+                    { label: 'CO₂-Steuer 2026',   href: '/ratgeber/co2-steuer-2026' },
                   ].map(({ label, href }) => (
                     <li key={label}>
                       <Link href={href} className="transition hover:text-white">{label}</Link>
@@ -84,7 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
 
             <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 text-xs text-slate-600 sm:flex-row">
-              <p>© {new Date().getFullYear()} Energie-Sparschwein. Alle Rechte vorbehalten.</p>
+              <p>© {new Date().getFullYear()} Wechselbiber. Alle Rechte vorbehalten.</p>
               <p>Mit ♥ gebaut für deutsche Verbraucher.</p>
             </div>
           </div>
