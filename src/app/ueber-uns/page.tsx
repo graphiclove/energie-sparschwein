@@ -47,7 +47,7 @@ export default function UeberUns() {
           </div>
 
           <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Was wir nicht machen</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Was wir NICHT machen</p>
             <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-slate-950">Weniger Druck. Mehr Klarheit.</h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {WHAT_WE_DO_NOT_DO.map((item) => (

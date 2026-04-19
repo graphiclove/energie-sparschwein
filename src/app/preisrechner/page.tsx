@@ -60,28 +60,56 @@ const estimateCosts = (data: {
   };
 };
 
-export default function Preisrechner() {
-  const [heating, setHeating] = useState<HeatingType>('gas');
-  const [area, setArea] = useState(120);
-  const [persons, setPersons] = useState(2);
-  const [electricity, setElectricity] = useState(3800);
-  const [km, setKm] = useState(12000);
+function getInitialPreisrechnerData() {
+  if (typeof window === 'undefined') {
+    return {
+      heating: 'gas' as HeatingType,
+      area: 120,
+      persons: 2,
+      electricity: 3800,
+      km: 12000,
+    };
+  }
 
-  useEffect(() => {
-    const saved = localStorage.getItem('preisrechnerData');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setHeating(parsed.heating ?? 'gas');
-        setArea(parsed.area ?? 120);
-        setPersons(parsed.persons ?? 2);
-        setElectricity(parsed.electricity ?? 3800);
-        setKm(parsed.km ?? 12000);
-      } catch {
-        localStorage.removeItem('preisrechnerData');
-      }
-    }
-  }, []);
+  const saved = localStorage.getItem('preisrechnerData');
+  if (!saved) {
+    return {
+      heating: 'gas' as HeatingType,
+      area: 120,
+      persons: 2,
+      electricity: 3800,
+      km: 12000,
+    };
+  }
+
+  try {
+    const parsed = JSON.parse(saved);
+    return {
+      heating: (parsed.heating ?? 'gas') as HeatingType,
+      area: parsed.area ?? 120,
+      persons: parsed.persons ?? 2,
+      electricity: parsed.electricity ?? 3800,
+      km: parsed.km ?? 12000,
+    };
+  } catch {
+    localStorage.removeItem('preisrechnerData');
+    return {
+      heating: 'gas' as HeatingType,
+      area: 120,
+      persons: 2,
+      electricity: 3800,
+      km: 12000,
+    };
+  }
+}
+
+export default function Preisrechner() {
+  const initialData = getInitialPreisrechnerData();
+  const [heating, setHeating] = useState<HeatingType>(initialData.heating);
+  const [area, setArea] = useState(initialData.area);
+  const [persons, setPersons] = useState(initialData.persons);
+  const [electricity, setElectricity] = useState(initialData.electricity);
+  const [km, setKm] = useState(initialData.km);
 
   useEffect(() => {
     localStorage.setItem('preisrechnerData', JSON.stringify({ heating, area, persons, electricity, km }));

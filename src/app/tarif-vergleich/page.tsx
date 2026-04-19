@@ -217,6 +217,9 @@ export default function TarifVergleich() {
     zip: data.zip,
   });
   const sparTipp   = getSparTipp(data);
+  const recommendedCompareCard = weg1Cards.find((card) => card.isRecommended) ?? weg1Cards[0];
+  const recommendedServiceCard = weg2Cards[0];
+  const fullOverviewCards = [...weg1Cards, ...weg2Cards];
 
   return (
     <div className="min-h-screen bg-background">
@@ -253,8 +256,11 @@ export default function TarifVergleich() {
             <a href="/spar-check" className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold transition hover:bg-white/20">
               Angaben anpassen →
             </a>
-            <a href="#wege" className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-primary/20 transition hover:bg-primary/90">
-              Zu den Wechseloptionen ↓
+            <a href="#empfehlung" className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-primary/20 transition hover:bg-primary/90">
+              Zur Empfehlung ↓
+            </a>
+            <a href="#vollansicht" className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold transition hover:bg-white/20">
+              Zur Vollansicht ↓
             </a>
           </div>
         </div>
@@ -318,58 +324,73 @@ export default function TarifVergleich() {
         </div>
       </section>
 
-      {/* ── Block 2: Zwei Wege ──────────────────────────────────────────────── */}
-      <section id="wege" className="border-y border-slate-200 bg-slate-50 px-6 py-20">
+      {/* ── Block 2: Empfehlung ──────────────────────────────────────────────── */}
+      <section id="empfehlung" className="border-y border-slate-200 bg-slate-50 px-6 py-20">
         <div className="mx-auto max-w-5xl">
           <div className="mb-12 text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary">Schritt 2</p>
-            <h2 className="mt-1 text-3xl font-bold text-slate-900">Wähle deinen Weg</h2>
+            <h2 className="mt-1 text-3xl font-bold text-slate-900">Unser empfohlener Einstieg für dich</h2>
             <p className="mx-auto mt-2 max-w-xl text-slate-500">
-              Egal ob du selbst vergleichen oder alles automatisch erledigen lassen willst – hier sind die besten Optionen.
+              Wenn du vom Spar-Check kommst, musst du nicht alles gleichzeitig prüfen. Hier ist zuerst der sinnvollste Startpunkt.
             </p>
           </div>
 
           <div className="grid gap-8 lg:grid-cols-2">
-
-            {/* Weg 1 */}
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+            <div id="selbst-vergleichen" className="rounded-3xl border border-primary/30 bg-white p-8 shadow-md shadow-primary/5">
               <div className="mb-5 flex items-start gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-2xl">🔍</div>
                 <div>
-                  <p className="mb-0.5 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Weg 1</p>
-                  <h3 className="text-xl font-bold text-slate-900">Selbst vergleichen & wechseln</h3>
+                  <p className="mb-0.5 text-xs font-bold uppercase tracking-[0.2em] text-primary">Empfohlener Start</p>
+                  <h3 className="text-xl font-bold text-slate-900">Selbst vergleichen & direkt wechseln</h3>
                 </div>
               </div>
               <p className="mb-6 text-sm leading-relaxed text-slate-500">
-                Du willst selbst den besten Tarif finden? Vergleiche auf den führenden Portalen und wechsle direkt. Der neue Anbieter kündigt für dich.
+                Wenn du den klarsten und schnellsten Hebel willst, fang hier an. Diese Option bringt dich ohne Umwege zur stärksten Vergleichsplattform für dein Profil.
               </p>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {weg1Cards.map((card) => <PortalCardUI key={card.name} card={card} />)}
+              <div className="grid gap-4">
+                <PortalCardUI card={recommendedCompareCard} />
               </div>
             </div>
 
-            {/* Weg 2 */}
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+            <div id="wechselservice" className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
               <div className="mb-5 flex items-start gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-2xl">🤖</div>
                 <div>
-                  <p className="mb-0.5 text-xs font-bold uppercase tracking-[0.2em] text-primary">Weg 2</p>
-                  <h3 className="text-xl font-bold text-slate-900">Für mich erledigen lassen</h3>
+                  <p className="mb-0.5 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Alternative dazu</p>
+                  <h3 className="text-xl font-bold text-slate-900">Lieber delegieren statt selbst prüfen</h3>
                 </div>
               </div>
               <p className="mb-6 text-sm leading-relaxed text-slate-500">
-                Keine Lust auf Vergleichen? Diese Services wechseln deinen Tarif automatisch – jedes Jahr aufs Neue. Kein Aufwand, kein Risiko.
+                Wenn du möglichst wenig Aufwand willst, ist ein Wechselservice der zweite sinnvolle Weg.
               </p>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {weg2Cards.map((card) => <PortalCardUI key={card.name} card={card} />)}
+              <div className="grid gap-4">
+                <PortalCardUI card={recommendedServiceCard} />
               </div>
             </div>
-
           </div>
         </div>
       </section>
 
-      {/* ── Block 3: Spar-Tipp ───────────────────────────────────────────────── */}
+      {/* ── Block 3: Vollansicht ───────────────────────────────────────────── */}
+      <section id="vollansicht" className="px-6 py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary">Vollansicht</p>
+            <h2 className="mt-1 text-3xl font-bold text-slate-900">Alle Anbieter, Services und Wege auf einen Blick</h2>
+            <p className="mx-auto mt-2 max-w-2xl text-slate-500">
+              Hier siehst du die komplette Übersicht, nicht nur den empfohlenen Startpunkt: Vergleichsportale, Wechselservices und weitere Wege.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {fullOverviewCards.map((card) => (
+              <PortalCardUI key={`${card.name}-${card.buttonText}`} card={card} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Block 4: Spar-Tipp ───────────────────────────────────────────────── */}
       <section className="px-6 py-20">
         <div className="mx-auto max-w-4xl">
           <div className="rounded-3xl border border-primary/20 bg-linear-to-br from-primary/10 to-emerald-50 p-10">
@@ -390,7 +411,7 @@ export default function TarifVergleich() {
         </div>
       </section>
 
-      {/* ── Block 4: Transparenz ─────────────────────────────────────────────── */}
+      {/* ── Block 5: Transparenz ─────────────────────────────────────────────── */}
       <section className="border-t border-slate-200 bg-slate-100 px-6 py-10">
         <div className="mx-auto flex max-w-4xl items-start gap-4">
           <span className="shrink-0 text-2xl">🔒</span>

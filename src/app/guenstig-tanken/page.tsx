@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface Station {
   id: string;
@@ -19,6 +19,10 @@ interface Station {
     hvodiesel?: number;
     h2?: number;
   };
+}
+
+interface SparCheckStorageData {
+  zip?: string;
 }
 
 const FUEL_OPTIONS = [
@@ -50,7 +54,7 @@ export default function GuenstigTanken() {
   const [mode, setMode] = useState<'tanken' | 'laden'>('tanken');
 
   // Load city when PLZ is entered
-  const loadCity = async (zipCode: string) => {
+  const loadCity = useCallback(async (zipCode: string) => {
     if (zipCode.length !== 5) return;
 
     setLoadingCity(true);
@@ -64,7 +68,7 @@ export default function GuenstigTanken() {
     } finally {
       setLoadingCity(false);
     }
-  };
+  }, []);
 
   // Get current location and find nearest PLZ
   const getCurrentLocationPLZ = async () => {
@@ -112,7 +116,7 @@ export default function GuenstigTanken() {
   };
 
   // Search stations with current filters
-  const searchStations = async (searchPlz?: string, searchRadius?: number, searchFuels?: string[]) => {
+  const searchStations = useCallback(async (searchPlz?: string, searchRadius?: number, searchFuels?: string[]) => {
     const searchZip = searchPlz || plz;
     const useRadius = searchRadius ?? radius;
     const useFuels = searchFuels || selectedFuels;
@@ -138,7 +142,7 @@ export default function GuenstigTanken() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [plz, radius, selectedFuels]);
 
   const handlePlzChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '').slice(0, 5);
@@ -200,7 +204,7 @@ export default function GuenstigTanken() {
     } else {
       const savedData = localStorage.getItem('sparCheckData');
       if (savedData) {
-        const data = JSON.parse(savedData);
+        const data = JSON.parse(savedData) as SparCheckStorageData;
         if (data.zip && /^\d{5}$/.test(data.zip)) {
           setPlz(data.zip);
           loadCity(data.zip);
@@ -208,7 +212,7 @@ export default function GuenstigTanken() {
         }
       }
     }
-  }, []);
+  }, [loadCity, searchStations]);
 
   // Scroll listener for sticky header
   useEffect(() => {

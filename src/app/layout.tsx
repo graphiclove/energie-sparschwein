@@ -8,7 +8,7 @@ import MicrosoftClarity from "@/components/MicrosoftClarity";
 import PriceWatcherWidget from "@/components/PriceWatcherWidget";
 
 export const metadata: Metadata = {
-  title: "Wechselbiber – Dein Kosten-Dolmetscher für Energie",
+  title: "Energie-Sparschwein – Dein Kosten-Dolmetscher für Energie",
   description: "Kein Tarif-Dschungel. In einer Minute zum Sparpfad für deinen Haushalt. Verständlich, unabhängig, kostenlos.",
 };
 
@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div>
                 <p className="text-lg font-bold">Wechselbiber</p>
                 <p className="mt-3 max-w-xs text-sm leading-relaxed text-slate-400">
-                  Dein unabhängiger Kosten-Dolmetscher für Energie. Kostenlos, transparent, ohne Agenda.
+                  Dein unabhängiger Kosten-Dolmetscher für Energie.
                 </p>
                 <p className="mt-2 max-w-xs text-sm leading-relaxed text-slate-500">
                   Sparpfad statt Preisliste. Begleitung statt Vermittlung.

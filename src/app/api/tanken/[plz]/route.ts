@@ -1,5 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+type FuelKey = 'diesel' | 'e5' | 'e10' | 'e5plus' | 'lpg' | 'cng' | 'hvodiesel' | 'h2';
+
+interface NominatimResult {
+  lat: string;
+  lon: string;
+  display_name: string;
+}
+
+interface TankerStation {
+  id: string;
+  name: string;
+  brand?: string;
+  street?: string;
+  houseNumber?: string;
+  place?: string;
+  postCode?: number | string;
+  dist: number;
+  diesel?: number;
+  e5?: number;
+  e10?: number;
+  lpg?: number;
+  cng?: number;
+  hvodiesel?: number;
+  h2?: number;
+}
+
+interface TankerResponse {
+  ok: boolean;
+  stations?: TankerStation[];
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ plz: string }> }
@@ -10,7 +41,7 @@ export async function GET(
   // Get query parameters
   const url = new URL(request.url);
   const radius = parseInt(url.searchParams.get('radius') || '15');
-  const fuels = url.searchParams.get('fuels')?.split(',') || ['diesel', 'e5', 'e10'];
+  const fuels = (url.searchParams.get('fuels')?.split(',') || ['diesel', 'e5', 'e10']) as FuelKey[];
 
   // Validate PLZ format
   if (!/^\d{5}$/.test(plz)) {
@@ -159,7 +190,7 @@ export async function GET(
         });
 
         if (response.ok) {
-          const data = await response.json();
+          const data = await response.json() as NominatimResult[];
           if (data && data.length > 0) {
             // Filter out non-German results
             const result = data[0];
@@ -205,7 +236,7 @@ export async function GET(
       return getMockData(plz);
     }
 
-    const tankerData = await tankerResponse.json();
+    const tankerData = await tankerResponse.json() as TankerResponse;
 
     console.log('Tankerkönig response ok:', tankerData.ok, 'stations count:', tankerData.stations?.length || 0);
 
@@ -216,7 +247,7 @@ export async function GET(
 
     // Get the closest stations in the area
     const relevantStations = tankerData.stations
-      .filter((station: any) => {
+      .filter((station: TankerStation) => {
         // Check if station has any of the selected fuels
         const hasFuel = fuels.some(fuel => {
           switch (fuel) {
@@ -233,9 +264,9 @@ export async function GET(
         });
         return hasFuel;
       })
-      .sort((a: any, b: any) => a.dist - b.dist) // Sort by distance
+      .sort((a: TankerStation, b: TankerStation) => a.dist - b.dist) // Sort by distance
       .slice(0, 20) // Take closest 20
-      .map((station: any) => ({
+      .map((station: TankerStation) => ({
         id: station.id,
         name: station.name,
         brand: station.brand,
