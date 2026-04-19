@@ -4,57 +4,72 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-// ─── Menü-Konfiguration ───────────────────────────────────────────────────────
 interface NavLink {
-  icon:   'spark' | 'chart' | 'calc' | 'home' | 'shower' | 'fuel' | 'plug' | 'globe' | 'pellets';
-  label:  string;
-  desc:   string;
-  href:   string;
+  icon: 'spark' | 'chart' | 'calc' | 'home' | 'shower' | 'fuel' | 'plug' | 'globe' | 'pellets';
+  label: string;
+  desc: string;
+  href: string;
   badge?: string;
 }
 
 interface NavItem {
-  label:  string;
-  href?:  string;
-  left?:  NavLink[];
+  label: string;
+  href?: string;
+  left?: NavLink[];
   right?: NavLink[];
 }
 
 const NAV: NavItem[] = [
   {
-    label: 'Energie sparen',
-    left: [
-      { icon: 'spark', label: 'Spar-Check',            desc: 'In 3 Min. dein Sparpotenzial berechnen', href: '/spar-check' },
-      { icon: 'chart', label: 'Tarif-Vergleich',       desc: 'Beste Anbieter für deine Situation',     href: '/tarif-vergleich' },
-      { icon: 'calc', label: 'Preisrechner',          desc: 'Heizung, Strom und Mobilität berechnen', href: '/preisrechner' },
-    ],
-    right: [
-      { icon: 'home', label: 'Heizkosten senken',    desc: 'Praktische Spar-Tipps für zuhause', href: '/ratgeber/heizkosten-senken' },
-      { icon: 'shower', label: 'Dusch-Rechner',        desc: 'Was kostet dein Duschverhalten?',   href: '/tools/dusch-rechner' },
-    ],
+    label: 'Spar-Check',
+    href: '/spar-check',
   },
   {
-    label: 'Tools',
-    left: [
-      { icon: 'fuel', label: 'Günstig Tanken',  desc: 'Tankstellen in deiner Nähe',        href: '/guenstig-tanken' },
-      { icon: 'shower', label: 'Dusch-Rechner',   desc: 'Was kostet dein Duschverhalten?',   href: '/tools/dusch-rechner' },
-      { icon: 'plug', label: 'Geräte-Check',    desc: 'Lohnt sich ein neues Gerät?',       href: '/tools/geraete-check' },
-    ],
+    label: 'Preis-Waechter',
+    href: '/preis-waechter',
   },
   {
     label: 'Ratgeber',
     href: '/ratgeber',
+  },
+  {
+    label: 'Mehr',
     left: [
-      { icon: 'chart', label: 'Gaspreise 2026',      desc: 'Preistreiber und was jetzt zählt', href: '/ratgeber/gaspreise-2026' },
-      { icon: 'globe', label: 'CO₂-Steuer 2026',     desc: 'Was sich 2026 ändert', href: '/ratgeber/co2-steuer-2026' },
-      { icon: 'home', label: 'Heizkosten senken',   desc: 'Sofort-Tipps und Förderungen',  href: '/ratgeber/heizkosten-senken' },
+      {
+        icon: 'chart',
+        label: 'Tarif-Vergleich',
+        desc: 'Vergleichen, wenn du schon eingeordnet bist',
+        href: '/tarif-vergleich',
+      },
+      {
+        icon: 'calc',
+        label: 'Preisrechner',
+        desc: 'Einzelne Kosten tiefer verstehen',
+        href: '/preisrechner',
+      },
+      {
+        icon: 'fuel',
+        label: 'Guenstig tanken',
+        desc: 'Peripheres Tool fuer Mobilitaet',
+        href: '/guenstig-tanken',
+      },
     ],
     right: [
-      { icon: 'pellets', label: 'Pellets vs. Gas',      desc: 'Was lohnt sich 2026 eher?', href: '/ratgeber/pellets-vs-gas' },
-      { icon: 'plug', label: 'Geräte-Check',         desc: 'Energiefresser im Haushalt finden', href: '/tools/geraete-check' },
+      {
+        icon: 'shower',
+        label: 'Dusch-Rechner',
+        desc: 'Was kostet dein Duschverhalten?',
+        href: '/tools/dusch-rechner',
+      },
+      {
+        icon: 'plug',
+        label: 'Geraete-Check',
+        desc: 'Energiefresser im Haushalt finden',
+        href: '/tools/geraete-check',
+      },
     ],
   },
-  { label: 'Über uns', href: '/ueber-uns' },
+  { label: 'Ueber uns', href: '/ueber-uns' },
 ];
 
 function NavIcon({ kind }: { kind: NavLink['icon'] }) {
@@ -143,7 +158,6 @@ function NavIcon({ kind }: { kind: NavLink['icon'] }) {
   }
 }
 
-// ─── Dropdown-Link ────────────────────────────────────────────────────────────
 function DropdownLink({ item, onClick }: { item: NavLink; onClick?: () => void }) {
   return (
     <Link
@@ -171,11 +185,10 @@ function DropdownLink({ item, onClick }: { item: NavLink; onClick?: () => void }
   );
 }
 
-// ─── Hauptkomponente ──────────────────────────────────────────────────────────
 export default function Navbar() {
-  const [openMenu,          setOpenMenu]          = useState<string | null>(null);
-  const [scrolled,          setScrolled]          = useState(false);
-  const [mobileOpen,        setMobileOpen]        = useState(false);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [openMobileSection, setOpenMobileSection] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -187,40 +200,41 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const onResize = () => { if (window.innerWidth >= 768) setMobileOpen(false); };
+    const onResize = () => {
+      if (window.innerWidth >= 768) setMobileOpen(false);
+    };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [mobileOpen]);
 
   const enter = (label: string) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     setOpenMenu(label);
   };
+
   const leave = () => {
     closeTimer.current = setTimeout(() => setOpenMenu(null), 120);
   };
 
   const hasDropdown = (item: NavItem) => !!(item.left || item.right);
 
-  // Keep the navbar dark over hero imagery, then make it denser on scroll.
-  const navBg     = scrolled
-    ? 'bg-[#0f172a]/96 shadow-md border-b border-slate-800 backdrop-blur-xl'
+  const navBg = scrolled
+    ? 'bg-[#0f172a]/96 border-b border-slate-800 shadow-md backdrop-blur-xl'
     : 'bg-[#0f172a]/72 border-b border-white/10 backdrop-blur-md';
-  const linkColor = 'text-white/80 hover:text-white hover:bg-white/10';
+  const linkColor = 'text-white/80 hover:bg-white/10 hover:text-white';
   const linkActive = 'bg-white/10 text-white';
 
   return (
     <>
-      {/* ── Desktop-Navbar ────────────────────────────────────────────────── */}
       <nav className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${navBg}`}>
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-6">
-
-          {/* Logo */}
           <Link
             href="/"
             className="flex shrink-0 items-center transition hover:opacity-80"
@@ -236,7 +250,6 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* Desktop-Nav-Items */}
           <div className="hidden flex-1 items-center justify-center gap-0.5 md:flex">
             {NAV.map((item) =>
               hasDropdown(item) ? (
@@ -259,14 +272,18 @@ export default function Navbar() {
                       item.label
                     )}
                     <svg
-                      className={`h-3.5 w-3.5 text-white/50 transition-transform duration-200 ${openMenu === item.label ? 'rotate-180' : ''}`}
-                      fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"
+                      className={`h-3.5 w-3.5 text-white/50 transition-transform duration-200 ${
+                        openMenu === item.label ? 'rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                      viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
 
-                  {/* Dropdown-Panel */}
                   <div
                     className={`absolute left-1/2 top-full mt-2 -translate-x-1/2 transition-all duration-200 ${
                       openMenu === item.label
@@ -275,16 +292,24 @@ export default function Navbar() {
                     }`}
                   >
                     <div className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-slate-200 bg-white" />
-                    <div className={`relative mt-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60 ${item.right ? 'w-125' : 'w-75'}`}>
+                    <div
+                      className={`relative mt-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60 ${
+                        item.right ? 'w-125' : 'w-75'
+                      }`}
+                    >
                       <div className={item.right ? 'grid grid-cols-2 divide-x divide-slate-100' : ''}>
                         {item.left && (
                           <div className="space-y-0.5 p-3">
-                            {item.left.map((link) => <DropdownLink key={link.label} item={link} />)}
+                            {item.left.map((link) => (
+                              <DropdownLink key={link.label} item={link} />
+                            ))}
                           </div>
                         )}
                         {item.right && (
                           <div className="space-y-0.5 p-3">
-                            {item.right.map((link) => <DropdownLink key={link.label} item={link} />)}
+                            {item.right.map((link) => (
+                              <DropdownLink key={link.label} item={link} />
+                            ))}
                           </div>
                         )}
                       </div>
@@ -303,35 +328,48 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Desktop-CTA */}
           <div className="hidden shrink-0 md:block">
-            <Link href="/spar-check" className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-primary/20 transition hover:bg-primary/90">
+            <Link
+              href="/spar-check"
+              className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-primary/20 transition hover:bg-primary/90"
+            >
               Spar-Check starten
             </Link>
           </div>
 
-          {/* Hamburger */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="rounded-lg p-2 transition hover:bg-white/10 md:hidden"
-            aria-label={mobileOpen ? 'Menü schließen' : 'Menü öffnen'}
+            aria-label={mobileOpen ? 'Menue schliessen' : 'Menue oeffnen'}
           >
             <div className="relative h-5 w-5">
-              <span className={`absolute left-0 top-1 block h-0.5 w-5 rounded-full bg-white transition-all duration-300 ${mobileOpen ? 'top-2.5 rotate-45' : ''}`} />
-              <span className={`absolute left-0 top-2.5 block h-0.5 w-5 rounded-full bg-white transition-all duration-300 ${mobileOpen ? 'opacity-0' : ''}`} />
-              <span className={`absolute left-0 top-4 block h-0.5 w-5 rounded-full bg-white transition-all duration-300 ${mobileOpen ? 'top-2.5 -rotate-45' : ''}`} />
+              <span
+                className={`absolute left-0 top-1 block h-0.5 w-5 rounded-full bg-white transition-all duration-300 ${
+                  mobileOpen ? 'top-2.5 rotate-45' : ''
+                }`}
+              />
+              <span
+                className={`absolute left-0 top-2.5 block h-0.5 w-5 rounded-full bg-white transition-all duration-300 ${
+                  mobileOpen ? 'opacity-0' : ''
+                }`}
+              />
+              <span
+                className={`absolute left-0 top-4 block h-0.5 w-5 rounded-full bg-white transition-all duration-300 ${
+                  mobileOpen ? 'top-2.5 -rotate-45' : ''
+                }`}
+              />
             </div>
           </button>
         </div>
       </nav>
 
-      {/* ── Mobile Backdrop ───────────────────────────────────────────────── */}
       <div
-        className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 md:hidden ${mobileOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 md:hidden ${
+          mobileOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
         onClick={() => setMobileOpen(false)}
       />
 
-      {/* ── Mobile Drawer ─────────────────────────────────────────────────── */}
       <div
         className={`fixed left-0 right-0 top-16 z-40 max-h-[calc(100dvh-4rem)] overflow-y-auto border-b border-slate-800 bg-[#0f172a] shadow-xl transition-all duration-300 md:hidden ${
           mobileOpen ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-3 opacity-0'
@@ -343,18 +381,29 @@ export default function Navbar() {
               {hasDropdown(item) ? (
                 <>
                   <button
-                    onClick={() => setOpenMobileSection(openMobileSection === item.label ? null : item.label)}
+                    onClick={() =>
+                      setOpenMobileSection(openMobileSection === item.label ? null : item.label)
+                    }
                     className="flex w-full items-center justify-between rounded-xl px-4 py-3 font-semibold text-white transition hover:bg-white/10"
                   >
                     {item.label}
                     <svg
-                      className={`h-4 w-4 text-white/40 transition-transform duration-200 ${openMobileSection === item.label ? 'rotate-180' : ''}`}
-                      fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"
+                      className={`h-4 w-4 text-white/40 transition-transform duration-200 ${
+                        openMobileSection === item.label ? 'rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                      viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-                  <div className={`overflow-hidden transition-all duration-300 ${openMobileSection === item.label ? 'max-h-150 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ${
+                      openMobileSection === item.label ? 'max-h-150 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
                     <div className="space-y-0.5 pb-2 pl-4">
                       {[...(item.left ?? []), ...(item.right ?? [])].map((link) => (
                         <Link

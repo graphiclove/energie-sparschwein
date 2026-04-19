@@ -47,15 +47,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </p>
               </div>
 
-              {/* Tools */}
+              {/* Kernwege */}
               <div>
-                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Tools</p>
+                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Kernwege</p>
                 <ul className="space-y-2.5 text-sm text-slate-400">
                   {[
                     { label: 'Spar-Check',      href: '/spar-check' },
-                    { label: 'Tarif-Vergleich', href: '/tarif-vergleich' },
-                    { label: 'Günstig Tanken',  href: '/guenstig-tanken' },
-                    { label: 'Preisrechner',    href: '/preisrechner' },
+                    { label: 'Preis-Wächter',   href: '/preis-waechter' },
+                    { label: 'Ratgeber',        href: '/ratgeber' },
+                    { label: 'Über uns',        href: '/ueber-uns' },
                   ].map(({ label, href }) => (
                     <li key={label}>
                       <Link href={href} className="transition hover:text-white">{label}</Link>
@@ -64,15 +64,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </ul>
               </div>
 
-              {/* Ratgeber */}
+              {/* Vertiefung */}
               <div>
-                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Ratgeber</p>
+                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Vertiefung</p>
                 <ul className="space-y-2.5 text-sm text-slate-400">
                   {[
+                    { label: 'Preisrechner',      href: '/preisrechner' },
+                    { label: 'Tarif-Vergleich',   href: '/tarif-vergleich' },
                     { label: 'Heizkosten senken', href: '/ratgeber/heizkosten-senken' },
                     { label: 'Gaspreise 2026',    href: '/ratgeber/gaspreise-2026' },
-                    { label: 'Pellets vs. Gas',   href: '/ratgeber/pellets-vs-gas' },
-                    { label: 'CO₂-Steuer 2026',   href: '/ratgeber/co2-steuer-2026' },
                   ].map(({ label, href }) => (
                     <li key={label}>
                       <Link href={href} className="transition hover:text-white">{label}</Link>
@@ -81,12 +81,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </ul>
               </div>
 
-              {/* Unternehmen */}
+              {/* Mehr */}
               <div>
-                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Unternehmen</p>
+                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Mehr</p>
                 <ul className="space-y-2.5 text-sm text-slate-400">
                   {[
-                    { label: 'Über uns',     href: '/ueber-uns' },
+                    { label: 'Günstig Tanken', href: '/guenstig-tanken' },
+                    { label: 'Dusch-Rechner', href: '/tools/dusch-rechner' },
+                    { label: 'Geräte-Check',  href: '/tools/geraete-check' },
                     { label: 'Impressum',    href: '/impressum' },
                     { label: 'Datenschutz',  href: '/datenschutz' },
                   ].map(({ label, href }) => (
