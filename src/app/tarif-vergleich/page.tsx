@@ -1,19 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import {
+  getAffiliateBranding,
   getManagedSwitchCards,
   getSelfCompareCards,
   type AffiliatePortalCard,
   type HeatingType,
 } from '@/lib/affiliateRecommendations';
+import {
+  getSavingRange,
+  getSparCheckResultRecommendation,
+  getSummaryLine,
+  getTotalSaving,
+  formatSavingRange,
+  type SparCheckData,
+} from '@/lib/sparCheck';
 
-// ─── Typen ────────────────────────────────────────────────────────────────────
 interface UserData {
   heating: HeatingType;
-  area:    number;
+  area: number;
   persons: number;
-  zip:     string;
+  zip: string;
 }
 
 const DEFAULT_DATA: UserData = { heating: 'unknown', area: 120, persons: 2, zip: '' };
@@ -29,13 +38,13 @@ function getInitialTarifVergleichData(): { data: UserData; hasData: boolean } {
   }
 
   try {
-    const p = JSON.parse(saved);
+    const parsed = JSON.parse(saved) as SparCheckData;
     return {
       data: {
-        heating: p.heating ?? 'unknown',
-        area:    Number(p.area)    || 120,
-        persons: Number(p.persons) || 2,
-        zip:     p.zip ?? '',
+        heating: parsed.heating ?? 'unknown',
+        area: Number(parsed.area) || 120,
+        persons: Number(parsed.persons) || 2,
+        zip: parsed.zip ?? '',
       },
       hasData: true,
     };
@@ -44,140 +53,94 @@ function getInitialTarifVergleichData(): { data: UserData; hasData: boolean } {
   }
 }
 
-// ─── Preise (BDEW/Verivox 2026) ───────────────────────────────────────────────
-const P = {
-  gas:       { alt: 0.136, neu: 0.081 },
-  oil:       { alt: 1.45,  neu: 1.30  },
-  pellets:   { alt: 0.38,  neu: 0.28  },
-  heizstrom: { alt: 0.38,  neu: 0.22  },
-  strom:     { alt: 0.40,  neu: 0.28  },
-};
-
-const currency = (n: number) =>
-  new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
-
-// ─── Vergleichstabelle ────────────────────────────────────────────────────────
-interface TableRow {
-  label:      string;
-  note:       string;
-  alt:        number;
-  neu:        number;
-  isEstimate?: boolean;
+function getComparisonExplanation(heating: HeatingType) {
+  if (heating === 'gas') {
+    return 'Weil dein Heiztyp klar ist und der wahrscheinlichste Hebel im Tarifraum liegt, ist Vergleichen hier ein plausibler nächster Schritt.';
+  }
+  if (heating === 'oil') {
+    return 'Bei Heizöl geht es weniger um klassische Tariflogik und stärker um den richtigen Kaufzeitpunkt und passende Preisräume.';
+  }
+  if (heating === 'pellets') {
+    return 'Für Pellet-Haushalte ist Vergleichen eher ein gezielter Resthebel als eine große Grundsatzentscheidung.';
+  }
+  if (heating === 'heatpump') {
+    return 'Bei Wärmepumpen ist der Tarif oft der direkteste Hebel nach der technischen Entscheidung.';
+  }
+  return 'Weil dein Heiztyp noch nicht ganz klar ist, solltest du diesen Vergleichsraum als Orientierung nutzen und nicht als automatische Entscheidung.';
 }
 
-function calcRows(data: UserData): TableRow[] {
-  const rows: TableRow[] = [];
-  const stromKwh = 1500 + data.persons * 500;
-
-  if (data.heating === 'gas') {
-    const kwh = data.area * 140;
-    rows.push({ label: 'Gasheizung', note: `${data.area} m² × 140 kWh/m² × Preis/kWh`, alt: kwh * P.gas.alt, neu: kwh * P.gas.neu });
+function getSelfServiceReason(heating: HeatingType) {
+  if (heating === 'oil') {
+    return 'Du willst selbst sehen, welcher Preisraum für die nächste Bestellung gerade wirklich attraktiv ist.';
   }
-  if (data.heating === 'oil') {
-    const liter = data.area * 15;
-    rows.push({ label: 'Heizöl', note: `${data.area} m² × 15 L/m² × Preis/L`, alt: liter * P.oil.alt, neu: liter * P.oil.neu });
+  if (heating === 'pellets') {
+    return 'Du brauchst wahrscheinlich keinen großen Wechselservice, sondern einen gezielten Blick auf den verbleibenden Hebel.';
   }
-  if (data.heating === 'pellets') {
-    const kg = data.area * 6;
-    rows.push({ label: 'Holzpellets', note: `${data.area} m² × 6 kg/m² × Preis/kg`, alt: kg * P.pellets.alt, neu: kg * P.pellets.neu });
+  if (heating === 'heatpump') {
+    return 'Du weißt bereits, dass die Technik steht und willst den Tarif jetzt selbst sauber prüfen.';
   }
-  if (data.heating === 'heatpump') {
-    const kwh = data.area * 35;
-    rows.push({ label: 'Heizstrom (Wärmepumpe)', note: `${data.area} m² × 35 kWh/m² × Preis/kWh`, alt: kwh * P.heizstrom.alt, neu: kwh * P.heizstrom.neu });
-  }
-
-  rows.push({
-    label:      'Haushaltsstrom',
-    note:       `Schätzwert: ~${stromKwh.toLocaleString('de-DE')} kWh/Jahr für ${data.persons} ${data.persons === 1 ? 'Person' : 'Personen'}`,
-    alt:        stromKwh * P.strom.alt,
-    neu:        stromKwh * P.strom.neu,
-    isEstimate: true,
-  });
-
-  return rows;
+  return 'Du willst den Vergleich selbst in der Hand behalten und direkt zum passenden Anbieterraum gehen.';
 }
 
-// ─── Spar-Tipp ────────────────────────────────────────────────────────────────
-function getSparTipp(data: UserData): { title: string; body: string; cta?: { text: string; href: string } } {
-  if (data.heating === 'gas') {
-    return {
-      title: 'Wusstest du? Pellets kosten nur 7,6 Ct/kWh',
-      body:  'Gas kostet aktuell ~10,5 Ct/kWh effektiv – Pellets nur 7,6 Ct/kWh. Bei gleicher Wärme könntest du deutlich sparen. Mit KfW-Förderung (bis 70 %) amortisiert sich ein Umstieg oft in unter 10 Jahren.',
-      cta:   { text: 'Mehr zur Heizungsmodernisierung', href: '/ratgeber/heizkosten-senken' },
-    };
+function getAssistedReason(heating: HeatingType) {
+  if (heating === 'oil' || heating === 'pellets') {
+    return 'Diese Variante passt, wenn du lieber an den richtigen Moment erinnert werden willst statt selbst laufend Preise zu beobachten.';
   }
-  if (data.heating === 'oil') {
-    return {
-      title: 'Heizöl ist 37% teurer als Pellets',
-      body:  'Heizöl schwankt stark mit dem Ölpreis. Pellets sind seit Jahren stabiler und aktuell 37 % günstiger pro kWh. Ein Umstieg wird mit KfW-Mitteln (bis 70 %) gefördert.',
-      cta:   { text: 'Mehr zur Heizungsmodernisierung', href: '/ratgeber/heizkosten-senken' },
-    };
-  }
-  if (data.heating === 'pellets') {
-    return {
-      title: 'Du heizt bereits sehr günstig!',
-      body:  'Pellets sind einer der günstigsten und klimafreundlichsten Brennstoffe. Dein größtes Restpotenzial liegt beim Stromtarif – prüfe, ob du mehr als 28 Ct/kWh zahlst.',
-    };
-  }
-  if (data.heating === 'heatpump') {
-    return {
-      title: 'Heizstrom statt Normaltarif spart 500–900 €/Jahr',
-      body:  'Wärmepumpen-Besitzer zahlen oft unnötig viel, weil sie keinen Spezialtarif nutzen. Heizstromtarife kosten 22–25 Ct/kWh statt 38 Ct/kWh – ohne jede Investition.',
-    };
-  }
-  return {
-    title: 'Stromtarif wechseln: einfachster Hebel',
-    body:  'Ein Wechsel zum günstigsten Neukundentarif spart deutschen Haushalten im Schnitt 180 € pro Jahr – in weniger als 10 Minuten erledigt.',
-  };
+  return 'Diese Variante passt, wenn du sparen willst, aber die Suche und den Wechsel nicht selbst organisieren möchtest.';
 }
 
-// ─── Sterne ───────────────────────────────────────────────────────────────────
-function StarRating({ rating }: { rating: number }) {
+function PortalCard({
+  card,
+  whyFits,
+  emphasized = false,
+}: {
+  card: AffiliatePortalCard;
+  whyFits: string;
+  emphasized?: boolean;
+}) {
+  const branding = getAffiliateBranding(card.name);
+
   return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <svg key={s} className={`w-3.5 h-3.5 ${s <= Math.round(rating) ? 'text-amber-400' : 'text-slate-200'}`} fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-      ))}
-      <span className="text-xs font-semibold text-slate-500 ml-1">{rating.toFixed(1)}</span>
-    </div>
-  );
-}
-
-// ─── Portal-Karte ─────────────────────────────────────────────────────────────
-function PortalCardUI({ card }: { card: AffiliatePortalCard }) {
-  return (
-    <div className={`relative flex flex-col rounded-2xl border p-5 transition hover:-translate-y-0.5 hover:shadow-md ${
-      card.isRecommended ? 'border-primary/30 bg-white shadow-md shadow-primary/5' : 'border-slate-200 bg-slate-50/80'
-    }`}>
-      {card.isRecommended && (
-        <div className="absolute -top-3 left-4">
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-[10px] font-bold text-slate-950 shadow shadow-primary/20">
-            ★ Unsere Empfehlung
-          </span>
+    <div
+      className={`rounded-[1.75rem] border p-6 ${
+        emphasized
+          ? 'border-primary/30 bg-white shadow-[0_35px_80px_-70px_rgba(15,23,42,0.42)]'
+          : 'border-slate-200 bg-white'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+            {emphasized ? 'Empfohlene Option' : 'Alternative'}
+          </p>
+          <h3 className="mt-3 text-2xl font-bold tracking-[-0.03em] text-slate-950">{card.name}</h3>
         </div>
-      )}
-      <div className="flex-1">
-        <p className={`text-base font-bold mb-1.5 mt-1 ${card.isRecommended ? 'text-slate-900' : 'text-slate-700'}`}>{card.name}</p>
-        <StarRating rating={card.rating} />
-        <ul className="mt-3 space-y-1.5">
-          {card.taglines.map((t) => (
-            <li key={t} className="flex items-start gap-1.5 text-xs text-slate-600 leading-snug">
-              <span className="text-primary mt-0.5 shrink-0">✓</span>
-              {t}
-            </li>
-          ))}
-        </ul>
+        <span
+          className={`inline-flex h-11 min-w-11 items-center justify-center rounded-full border px-3 text-sm font-bold ${branding.badgeClassName}`}
+        >
+          {branding.shortName}
+        </span>
       </div>
+
+      <p className="mt-5 text-base leading-7 text-slate-600">{whyFits}</p>
+
+      <ul className="mt-5 space-y-2 text-sm leading-6 text-slate-600">
+        {card.taglines.map((tagline) => (
+          <li key={tagline} className="flex gap-2">
+            <span className="mt-1.5 h-2 w-2 rounded-full bg-primary" />
+            <span>{tagline}</span>
+          </li>
+        ))}
+      </ul>
+
       <a
         href={card.url}
         target="_blank"
         rel="noopener noreferrer"
-        className={`mt-5 block rounded-full px-4 py-2.5 text-xs font-semibold text-center transition ${
-          card.isRecommended
-            ? 'bg-primary text-slate-950 hover:bg-primary/90 shadow-md shadow-primary/20'
-            : 'bg-slate-800 text-white hover:bg-slate-700'
+        className={`mt-7 inline-flex min-h-12 items-center justify-center rounded-[1rem] px-5 text-sm font-semibold transition ${
+          emphasized
+            ? 'bg-slate-900 text-white hover:bg-slate-800'
+            : 'border border-slate-300 text-slate-900 hover:bg-slate-50'
         }`}
       >
         {card.buttonText}
@@ -186,246 +149,239 @@ function PortalCardUI({ card }: { card: AffiliatePortalCard }) {
   );
 }
 
-const HEATING_LABELS: Record<HeatingType, string> = {
-  gas:      'Gas',
-  oil:      'Heizöl',
-  pellets:  'Pellets',
-  heatpump: 'Wärmepumpe',
-  unknown:  'Nicht angegeben',
-};
-
-// ─── Hauptkomponente ──────────────────────────────────────────────────────────
-export default function TarifVergleich() {
-  const initialState = getInitialTarifVergleichData();
+export default function TarifVergleichPage() {
+  const initialState = useMemo(() => getInitialTarifVergleichData(), []);
   const [data] = useState<UserData>(initialState.data);
   const [hasData] = useState(initialState.hasData);
 
-  const rows       = calcRows(data);
-  const totalAlt   = rows.reduce((s, r) => s + r.alt, 0);
-  const totalNeu   = rows.reduce((s, r) => s + r.neu, 0);
-  const totalSaving = totalAlt - totalNeu;
-  const weg1Cards  = getSelfCompareCards({
-    heating: data.heating,
-    area: data.area,
-    persons: data.persons,
-    zip: data.zip,
-  });
-  const weg2Cards = getManagedSwitchCards({
-    heating: data.heating,
-    area: data.area,
-    persons: data.persons,
-    zip: data.zip,
-  });
-  const sparTipp   = getSparTipp(data);
-  const recommendedCompareCard = weg1Cards.find((card) => card.isRecommended) ?? weg1Cards[0];
-  const recommendedServiceCard = weg2Cards[0];
-  const fullOverviewCards = [...weg1Cards, ...weg2Cards];
+  const sparCheckData = useMemo<SparCheckData>(
+    () => ({
+      heating: data.heating,
+      area: data.area,
+      persons: data.persons,
+      zip: data.zip,
+      electricityKnown: false,
+      electricityKwh: 3000,
+    }),
+    [data],
+  );
+
+  const result = useMemo(() => getSparCheckResultRecommendation(sparCheckData), [sparCheckData]);
+  const savingRangeText = useMemo(
+    () => formatSavingRange(getSavingRange(getTotalSaving(sparCheckData), 0.35)),
+    [sparCheckData],
+  );
+  const summaryLine = useMemo(() => getSummaryLine(sparCheckData), [sparCheckData]);
+
+  const selfCompareCards = useMemo(
+    () =>
+      getSelfCompareCards({
+        heating: data.heating,
+        area: data.area,
+        persons: data.persons,
+        zip: data.zip,
+      }),
+    [data],
+  );
+  const managedSwitchCards = useMemo(
+    () =>
+      getManagedSwitchCards({
+        heating: data.heating,
+        area: data.area,
+        persons: data.persons,
+        zip: data.zip,
+      }),
+    [data],
+  );
+
+  const selfServiceCard = selfCompareCards.find((card) => card.isRecommended) ?? selfCompareCards[0];
+  const assistedCard = managedSwitchCards.find((card) => card.isRecommended) ?? managedSwitchCards[0];
+  const fullOverviewCards = [...selfCompareCards, ...managedSwitchCards];
 
   return (
-    <div className="min-h-screen bg-background">
-
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="bg-linear-to-b from-slate-900 to-slate-800 px-6 pb-16 pt-32 text-white">
-        <div className="mx-auto max-w-4xl space-y-6 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary/80">Deine persönliche Spar-Analyse</p>
-          <h1 className="text-5xl font-bold leading-tight tracking-tight md:text-6xl">
-            Was du zahlst –<br className="hidden sm:block" /> und was möglich wäre
-          </h1>
-          <p className="mx-auto max-w-2xl text-lg leading-relaxed text-slate-300">
-            Konkrete Zahlen für deinen Haushalt, bevor du zu einem Vergleichsportal gehst.
-          </p>
-
-          {hasData ? (
-            <div className="inline-flex flex-wrap justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-slate-200">
-              <span>Heizung: {HEATING_LABELS[data.heating]}</span>
-              <span className="text-white/30">·</span>
-              <span>{data.area} m²</span>
-              <span className="text-white/30">·</span>
-              <span>{data.persons} {data.persons === 1 ? 'Person' : 'Personen'}</span>
-              {data.zip && <><span className="text-white/30">·</span><span>PLZ {data.zip}</span></>}
-            </div>
-          ) : (
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/20 px-5 py-2.5 text-sm font-semibold text-amber-200">
-              ⚠ Noch kein Spar-Check –{' '}
-              <a href="/spar-check" className="underline underline-offset-2 transition hover:text-white">jetzt starten</a>
-              {' '}für personalisierte Werte.
-            </div>
-          )}
-
-          <div className="flex flex-col justify-center gap-3 pt-1 sm:flex-row">
-            <a href="/spar-check" className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold transition hover:bg-white/20">
-              Angaben anpassen →
-            </a>
-            <a href="#empfehlung" className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-primary/20 transition hover:bg-primary/90">
-              Zur Empfehlung ↓
-            </a>
-            <a href="#vollansicht" className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold transition hover:bg-white/20">
-              Zur Vollansicht ↓
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Block 1: Vergleichstabelle ──────────────────────────────────────── */}
-      <section className="px-6 py-20">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary">Schritt 1</p>
-            <h2 className="mt-1 text-3xl font-bold text-slate-900">Was du aktuell zahlst – und was möglich wäre</h2>
-            <p className="mt-2 text-sm text-slate-500">
-              Grundlage: Durchschnittspreise 2026 (BDEW, Verivox). Exakte Tarife findest du bei den Vergleichsportalen unten.
+    <div className="min-h-screen bg-[#eef2f2] text-slate-950">
+      <section className="relative overflow-hidden bg-[#13263b] px-6 pb-18 pt-28 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(107,193,123,0.18),transparent_36%),linear-gradient(180deg,rgba(19,38,59,0.92)_0%,rgba(19,38,59,1)_100%)]" />
+        <div className="relative mx-auto max-w-6xl">
+          <div className="max-w-4xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary/85">
+              Vergleichsraum
             </p>
-          </div>
-
-          <div className="overflow-hidden rounded-3xl border border-slate-200 shadow-lg">
-            {/* Kopfzeile */}
-            <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-6 bg-slate-900 px-6 py-4 text-xs font-bold uppercase tracking-wider text-white">
-              <div>Kostenart</div>
-              <div className="w-28 text-right">Grundversorgung</div>
-              <div className="w-28 text-right">Bester Neukunde</div>
-              <div className="w-24 text-right text-primary">Ersparnis</div>
-            </div>
-
-            {/* Datenzeilen */}
-            {rows.map((row, i) => (
-              <div key={row.label} className={`grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-6 px-6 py-5 text-sm ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
-                <div>
-                  <p className="font-semibold text-slate-800">
-                    {row.label}
-                    {row.isEstimate && <span className="ml-1.5 align-middle text-[10px] font-normal text-slate-400">*</span>}
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-400">{row.note}</p>
-                </div>
-                <div className="w-28 text-right text-slate-500">{currency(row.alt)}</div>
-                <div className="w-28 text-right font-semibold text-slate-900">{currency(row.neu)}</div>
-                <div className="w-24 text-right font-bold text-primary">− {currency(row.alt - row.neu)}</div>
-              </div>
-            ))}
-
-            {/* Summenzeile */}
-            <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-6 border-t border-slate-700 bg-slate-900 px-6 py-5 text-sm font-bold text-white">
-              <div>Gesamt / Jahr</div>
-              <div className="w-28 text-right text-slate-400">{currency(totalAlt)}</div>
-              <div className="w-28 text-right">{currency(totalNeu)}</div>
-              <div className="w-24 text-right text-base text-primary">− {currency(totalSaving)}</div>
-            </div>
-          </div>
-
-          {/* Fußnoten */}
-          <div className="mt-4 space-y-2">
-            <p className="text-xs text-slate-400">* Haushaltsstrom geschätzt auf Basis der Personenzahl (BDEW-Durchschnitt ohne Heizung/Warmwasser).</p>
-            <div className="flex items-start gap-3 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3">
-              <span className="mt-0.5 shrink-0 text-sm text-amber-500">ℹ</span>
-              <p className="text-xs text-amber-800">
-                Berechnung basiert auf Durchschnittspreisen 2026 (BDEW, Verivox). Exakte Tarife für deine PLZ findest du bei den Vergleichsportalen unten.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Block 2: Empfehlung ──────────────────────────────────────────────── */}
-      <section id="empfehlung" className="border-y border-slate-200 bg-slate-50 px-6 py-20">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-12 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary">Schritt 2</p>
-            <h2 className="mt-1 text-3xl font-bold text-slate-900">Unser empfohlener Einstieg für dich</h2>
-            <p className="mx-auto mt-2 max-w-xl text-slate-500">
-              Wenn du vom Spar-Check kommst, musst du nicht alles gleichzeitig prüfen. Hier ist zuerst der sinnvollste Startpunkt.
+            <h1 className="mt-4 text-balance text-5xl font-bold leading-[0.94] tracking-[-0.05em] md:text-6xl">
+              Jetzt bist du im passenden Vergleichsraum. Nicht mehr im Portalchaos.
+            </h1>
+            <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
+              Diese Seite ist der nachgelagerte Entscheidungsraum nach deiner Einordnung. Du siehst
+              hier nur Wege, die zu deinem Haushalt plausibel passen.
             </p>
-          </div>
 
-          <div className="grid gap-8 lg:grid-cols-2">
-            <div id="selbst-vergleichen" className="rounded-3xl border border-primary/30 bg-white p-8 shadow-md shadow-primary/5">
-              <div className="mb-5 flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-2xl">🔍</div>
-                <div>
-                  <p className="mb-0.5 text-xs font-bold uppercase tracking-[0.2em] text-primary">Empfohlener Start</p>
-                  <h3 className="text-xl font-bold text-slate-900">Selbst vergleichen & direkt wechseln</h3>
-                </div>
-              </div>
-              <p className="mb-6 text-sm leading-relaxed text-slate-500">
-                Wenn du den klarsten und schnellsten Hebel willst, fang hier an. Diese Option bringt dich ohne Umwege zur stärksten Vergleichsplattform für dein Profil.
-              </p>
-              <div className="grid gap-4">
-                <PortalCardUI card={recommendedCompareCard} />
-              </div>
-            </div>
-
-            <div id="wechselservice" className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-              <div className="mb-5 flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-2xl">🤖</div>
-                <div>
-                  <p className="mb-0.5 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Alternative dazu</p>
-                  <h3 className="text-xl font-bold text-slate-900">Lieber delegieren statt selbst prüfen</h3>
-                </div>
-              </div>
-              <p className="mb-6 text-sm leading-relaxed text-slate-500">
-                Wenn du möglichst wenig Aufwand willst, ist ein Wechselservice der zweite sinnvolle Weg.
-              </p>
-              <div className="grid gap-4">
-                <PortalCardUI card={recommendedServiceCard} />
-              </div>
+            <div className="mt-8 flex flex-wrap gap-3 text-sm">
+              <span className="rounded-full border border-white/12 bg-white/7 px-4 py-2 text-slate-100">
+                {hasData ? summaryLine : 'ohne gespeicherte Einordnung'}
+              </span>
+              <span className="rounded-full border border-white/12 bg-white/7 px-4 py-2 text-slate-100">
+                typische Spanne: {savingRangeText}
+              </span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Block 3: Vollansicht ───────────────────────────────────────────── */}
-      <section id="vollansicht" className="px-6 py-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-12 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary">Vollansicht</p>
-            <h2 className="mt-1 text-3xl font-bold text-slate-900">Alle Anbieter, Services und Wege auf einen Blick</h2>
-            <p className="mx-auto mt-2 max-w-2xl text-slate-500">
-              Hier siehst du die komplette Übersicht, nicht nur den empfohlenen Startpunkt: Vergleichsportale, Wechselservices und weitere Wege.
+      <section className="px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-5xl space-y-6">
+          <section className="rounded-[2rem] border border-slate-200 bg-white p-7 shadow-[0_40px_90px_-72px_rgba(15,23,42,0.32)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+              Rückbezug auf deine Einordnung
             </p>
-          </div>
+            <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em] text-slate-950">
+              {result.mainRecommendation.title}
+            </h2>
+            <p className="mt-5 text-base leading-7 text-slate-600">
+              {getComparisonExplanation(data.heating)}
+            </p>
+            <div className="mt-6 rounded-[1.4rem] bg-[#f6f8f8] p-5">
+              <p className="text-sm font-semibold text-slate-500">Warum du diese Optionen hier siehst</p>
+              <p className="mt-2 text-base leading-7 text-slate-700">{result.recommendationReason}</p>
+            </div>
+          </section>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {fullOverviewCards.map((card) => (
-              <PortalCardUI key={`${card.name}-${card.buttonText}`} card={card} />
-            ))}
-          </div>
-        </div>
-      </section>
+          <section className="rounded-[2rem] border border-slate-900 bg-slate-950 p-7 text-white shadow-[0_40px_90px_-72px_rgba(15,23,42,0.45)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+              Primärer Weg
+            </p>
+            <h2 className="mt-4 text-balance text-4xl font-bold tracking-[-0.05em]">
+              Selbst vergleichen und direkt handeln
+            </h2>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
+              Wenn du jetzt handeln willst, ist das der direkteste und klarste Weg. Du gehst selbst
+              in den passenden Vergleichsraum und behältst die Entscheidung vollständig in der Hand.
+            </p>
 
-      {/* ── Block 4: Spar-Tipp ───────────────────────────────────────────────── */}
-      <section className="px-6 py-20">
-        <div className="mx-auto max-w-4xl">
-          <div className="rounded-3xl border border-primary/20 bg-linear-to-br from-primary/10 to-emerald-50 p-10">
-            <div className="flex items-start gap-5">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/20 text-xl">💡</div>
+            {selfServiceCard ? (
+              <div className="mt-8">
+                <PortalCard card={selfServiceCard} whyFits={getSelfServiceReason(data.heating)} emphasized />
+              </div>
+            ) : null}
+          </section>
+
+          <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-7">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">
+                Seitlicher Weg
+              </p>
+              <h3 className="mt-4 text-2xl font-bold tracking-[-0.03em] text-slate-950">
+                Lieber delegieren statt selbst prüfen
+              </h3>
+              <p className="mt-4 text-base leading-7 text-slate-600">
+                Diese Variante passt, wenn du nicht selbst alle Tarife und Fristen im Blick behalten
+                willst, aber trotzdem von einem besseren Weg profitieren möchtest.
+              </p>
+
+              {assistedCard ? (
+                <div className="mt-6">
+                  <PortalCard card={assistedCard} whyFits={getAssistedReason(data.heating)} />
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-[2rem] border border-primary/20 bg-[#eaf4ec] p-7">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+                Noch nicht bereit?
+              </p>
+              <h3 className="mt-4 text-2xl font-bold tracking-[-0.03em] text-slate-950">
+                Dann pausiere bewusst statt das Thema wieder zu verlieren.
+              </h3>
+              <p className="mt-4 text-base leading-7 text-slate-700">
+                Nicht jeder Haushalt muss heute sofort wechseln. Wenn dir gerade Klarheit reicht,
+                ist der Preis-Wächter der richtige Produktzustand für jetzt.
+              </p>
+              <div className="mt-6 grid gap-3 text-sm text-slate-700 md:grid-cols-3">
+                {[
+                  'wenn Preise in deiner Region fallen',
+                  'wenn dein Tarif ausläuft',
+                  'wenn ein neuer Check sinnvoll wird',
+                ].map((item) => (
+                  <div key={item} className="rounded-[1.2rem] bg-white/75 px-4 py-4">
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <Link
+                href="/preis-waechter"
+                className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[1rem] bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                Zum Preis-Wächter →
+              </Link>
+            </div>
+          </section>
+
+          <section className="rounded-[2rem] border border-slate-200 bg-white p-7 shadow-[0_40px_90px_-72px_rgba(15,23,42,0.32)]">
+            <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
               <div>
-                <p className="mb-1 text-xs font-bold uppercase tracking-[0.28em] text-primary">Spar-Tipp</p>
-                <h3 className="mb-3 text-2xl font-bold text-slate-900">{sparTipp.title}</h3>
-                <p className="leading-relaxed text-slate-600">{sparTipp.body}</p>
-                {sparTipp.cta && (
-                  <a href={sparTipp.cta.href} className="mt-5 inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 text-sm font-semibold text-white transition hover:bg-secondary/90">
-                    {sparTipp.cta.text} →
-                  </a>
-                )}
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+                  Komplette Übersicht
+                </p>
+                <h3 className="mt-4 text-3xl font-bold tracking-[-0.04em] text-slate-950">
+                  Wenn du alles nebeneinander sehen willst
+                </h3>
+                <p className="mt-4 text-base leading-7 text-slate-600">
+                  Das ist die breite Sicht auf Selbstvergleich und Delegation. Sie ist bewusst
+                  nachgeordnet, falls du lieber selbst sortieren möchtest.
+                </p>
+                <div className="mt-6 rounded-[1.4rem] bg-[#f6f8f8] p-5">
+                  <p className="text-sm font-semibold text-slate-500">Vertiefung statt Exit</p>
+                  <p className="mt-2 text-base leading-7 text-slate-700">
+                    Wenn du vor dem Vergleich noch genauer auf einzelne Kostenblöcke schauen willst,
+                    ist der Preisrechner ein sinnvoller Drill-down, aber nicht der Hauptweg auf
+                    dieser Seite.
+                  </p>
+                  <Link
+                    href="/preisrechner"
+                    className="mt-4 inline-flex text-sm font-semibold text-slate-700 transition hover:text-slate-950"
+                  >
+                    Preisrechner als Vertiefung öffnen →
+                  </Link>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                {fullOverviewCards.map((card) => (
+                  <PortalCard
+                    key={`${card.name}-${card.buttonText}`}
+                    card={card}
+                    whyFits={
+                      managedSwitchCards.some((managedCard) => managedCard.name === card.name)
+                        ? getAssistedReason(data.heating)
+                        : getSelfServiceReason(data.heating)
+                    }
+                  />
+                ))}
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      {/* ── Block 5: Transparenz ─────────────────────────────────────────────── */}
-      <section className="border-t border-slate-200 bg-slate-100 px-6 py-10">
-        <div className="mx-auto flex max-w-4xl items-start gap-4">
-          <span className="shrink-0 text-2xl">🔒</span>
-          <div>
-            <p className="mb-1 text-sm font-bold text-slate-700">So finanzieren wir uns</p>
-            <p className="text-sm leading-relaxed text-slate-500">
-              Bei einem Wechsel oder einer Anmeldung über unsere Links erhalten wir eine Provision vom Vergleichsportal oder Partner.
-              Für dich entstehen dadurch <strong className="text-slate-700">keine Mehrkosten</strong>.
-              Unsere Empfehlungen basieren auf unabhängiger Recherche – nicht auf Provisionsgrößen.
+          <section className="rounded-[2rem] border border-slate-200 bg-white p-7 shadow-[0_40px_90px_-72px_rgba(15,23,42,0.32)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+              Transparenz
             </p>
-          </div>
+            <h3 className="mt-4 text-3xl font-bold tracking-[-0.04em] text-slate-950">
+              Warum diese Vergleichswege hier auftauchen
+            </h3>
+            <div className="mt-6 space-y-4">
+              {[
+                'Diese Seite zeigt Partner- und Vergleichswege, weil du vorher bereits eingeordnet wurdest und Vergleichen jetzt plausibel sein kann.',
+                'Wir verdienen nur, wenn du über einen dieser Wege wechselst oder dich anmeldest. Für dich entstehen dadurch keine Mehrkosten.',
+                'Nicht jede Option ist für jeden Haushalt gleich sinnvoll. Deshalb bekommst du oben einen empfohlenen Startpunkt statt nur eine Liste.',
+              ].map((item) => (
+                <div key={item} className="flex gap-3">
+                  <span className="mt-2 h-2.5 w-2.5 rounded-full bg-primary" />
+                  <p className="text-base leading-7 text-slate-600">{item}</p>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
       </section>
-
     </div>
   );
 }
