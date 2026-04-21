@@ -14,9 +14,9 @@ export default function RatgeberLayout({ children }: { children: React.ReactNode
         <div className="mx-auto flex max-w-7xl flex-col gap-8 lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
           <aside className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-24">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">Ratgeber</p>
-            <h2 className="mt-3 text-2xl font-bold text-slate-900">Themen & Artikel</h2>
+            <h2 className="mt-3 text-2xl font-bold text-slate-900">Fragen & Antworten</h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-500">
-              Der Hub für Preisentwicklung, Spar-Hebel und Heizungsfragen. Ideal, um Besucher vor dem Vergleich besser vorzuwärmen.
+              Der Hub für echte Haushaltsfragen zu Preisen, Spar-Hebeln und Heizsystemen. Jeder Artikel führt zurück in einen sinnvollen nächsten Schritt.
             </p>
 
             <div className="relative mt-5 h-32 overflow-hidden rounded-[1.75rem] bg-slate-50">
@@ -50,7 +50,7 @@ export default function RatgeberLayout({ children }: { children: React.ReactNode
                   }`}
                 >
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-60">{entry.category}</p>
-                  <p className="mt-1 text-sm font-semibold">{entry.title}</p>
+                  <p className="mt-1 text-sm font-semibold">{entry.question}</p>
                   <p className="mt-1 text-xs opacity-70">{entry.readingTime}</p>
                 </Link>
               ))}
@@ -69,6 +69,21 @@ export default function RatgeberLayout({ children }: { children: React.ReactNode
                 className="mt-4 inline-flex rounded-full bg-primary px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-primary/90"
               >
                 Zum Spar-Check
+              </Link>
+            </div>
+
+            <div className="mt-4 rounded-[1.75rem] border border-slate-200 bg-slate-50 p-4">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Methodik
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Wie wir Empfehlungen herleiten und warum Content bei Wechselbiber nicht vom Produkt getrennt ist.
+              </p>
+              <Link
+                href="/methodik"
+                className="mt-4 inline-flex text-sm font-semibold text-slate-700 underline underline-offset-2 transition hover:text-slate-950"
+              >
+                Zur Methodik →
               </Link>
             </div>
           </aside>

@@ -143,9 +143,9 @@ export default function Preisrechner() {
                   Jetzt berechnen
                 </a>
                 <a
-                  href="/tarif-vergleich"
+                  href="/spar-check"
                   className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-8 py-4 text-base font-semibold text-white transition hover:border-white hover:bg-white/20">
-                  Zu Tarif-Tipps
+                  Zum Spar-Check
                 </a>
               </div>
               <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -192,7 +192,7 @@ export default function Preisrechner() {
                   </div>
                   <div className="rounded-full bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950">-18%</div>
                 </div>
-                <p className="mt-4 text-sm text-slate-400">Wenn du auf günstige Zeiten und bessere Tarife setzt.</p>
+                <p className="mt-4 text-sm text-slate-400">Wenn du Kostenhebel gezielt angehst und nicht alles auf einmal lösen willst.</p>
               </div>
             </div>
           </div>

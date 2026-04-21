@@ -47,6 +47,23 @@ export default function UeberUns() {
           </div>
 
           <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Wie wir Empfehlungen ableiten</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-slate-950">Methodik gehört ins Produkt, nicht nur ins Kleingedruckte.</h2>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
+              Wechselbiber arbeitet mit Marktpreisen, typischen Haushaltsprofilen und klarer
+              Produktlogik. Wir versuchen zuerst herauszufinden, ob für einen Haushalt eher vergleichen,
+              beobachten oder tiefer verstehen sinnvoll ist. Wie genau das funktioniert, haben wir
+              transparent dokumentiert.
+            </p>
+            <Link
+              href="/methodik"
+              className="mt-6 inline-flex rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+            >
+              Zur Methodik →
+            </Link>
+          </div>
+
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Was wir NICHT machen</p>
             <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-slate-950">Weniger Druck. Mehr Klarheit.</h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">

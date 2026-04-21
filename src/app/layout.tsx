@@ -45,6 +45,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <p className="mt-5 text-xs text-slate-600">
                   Affiliate-Hinweis: Wir erhalten ggf. Provisionen bei Tarifwechseln über unsere Links. Für dich entstehen keine Mehrkosten.
                 </p>
+                <Link href="/methodik" className="mt-4 inline-flex text-sm font-semibold text-slate-300 underline underline-offset-2 transition hover:text-white">
+                  So arbeiten wir →
+                </Link>
               </div>
 
               {/* Kernwege */}
@@ -55,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     { label: 'Spar-Check',      href: '/spar-check' },
                     { label: 'Preis-Wächter',   href: '/preis-waechter' },
                     { label: 'Ratgeber',        href: '/ratgeber' },
+                    { label: 'Methodik',        href: '/methodik' },
                     { label: 'Über uns',        href: '/ueber-uns' },
                   ].map(({ label, href }) => (
                     <li key={label}>
