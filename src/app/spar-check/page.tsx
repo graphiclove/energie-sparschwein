@@ -190,11 +190,13 @@ export default function SparCheckPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eef2f2] text-slate-950">
+    <div className="min-h-screen bg-background text-slate-950">
       <section className="relative overflow-hidden bg-[#13263b] px-6 pb-18 pt-28 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(107,193,123,0.18),transparent_36%),linear-gradient(180deg,rgba(19,38,59,0.92)_0%,rgba(19,38,59,1)_100%)]" />
-        <div className="relative mx-auto max-w-6xl">
-          <div className="max-w-3xl">
+        <div className="editorial-grid absolute inset-0 opacity-20" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(244,166,42,0.12),transparent_28%)]" />
+        <div className="relative mx-auto max-w-7xl">
+          <div className="max-w-3xl rounded-[2rem] border border-white/10 bg-white/6 p-6 shadow-2xl shadow-black/10 backdrop-blur-sm md:p-8">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary/85">
               Spar-Check
             </p>
@@ -221,12 +223,12 @@ export default function SparCheckPage() {
         </div>
       </section>
 
-      <section className="px-6 py-16 md:py-20">
-        <div className="mx-auto max-w-5xl">
+      <section className="radial-wash px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-6xl">
           {!started ? (
-            <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-              <div className="overflow-hidden rounded-[2.25rem] border border-slate-200 bg-white shadow-[0_40px_90px_-68px_rgba(15,23,42,0.35)]">
-                <div className="border-b border-slate-100 px-7 py-6 md:px-8">
+            <div className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
+              <div className="surface-panel overflow-hidden rounded-[2.6rem]">
+                <div className="border-b border-slate-200/70 px-7 py-6 md:px-8">
                   <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
                     Was du hier bekommst
                   </p>
@@ -248,7 +250,7 @@ export default function SparCheckPage() {
                     </p>
                   </div>
 
-                  <div className="mt-8 space-y-3">
+                  <div className="mt-8 grid gap-3 md:grid-cols-3">
                     {[
                       '1. Heizsituation klären',
                       '2. Haushaltsgröße grob einordnen',
@@ -256,7 +258,7 @@ export default function SparCheckPage() {
                     ].map((item) => (
                       <div
                         key={item}
-                        className="rounded-[1.3rem] border border-slate-200 bg-[#f6f8f8] px-5 py-4 text-sm font-medium text-slate-700"
+                        className="rounded-[1.45rem] border border-slate-200 bg-[rgba(255,255,255,0.72)] px-5 py-4 text-sm font-medium text-slate-700"
                       >
                         {item}
                       </div>
@@ -267,7 +269,7 @@ export default function SparCheckPage() {
                     <button
                       type="button"
                       onClick={startCheck}
-                      className="inline-flex min-h-14 items-center justify-center rounded-[1.2rem] bg-slate-900 px-6 text-base font-semibold text-white transition hover:bg-slate-800"
+                      className="inline-flex min-h-14 items-center justify-center rounded-[1.2rem] bg-[#13263b] px-6 text-base font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-[#17324d]"
                     >
                       {hasStoredProgress() && !isDefaultState(data)
                         ? 'Mit gespeicherten Angaben weiter'
@@ -287,31 +289,51 @@ export default function SparCheckPage() {
                 </div>
               </div>
 
-              <aside className="rounded-[2.25rem] border border-primary/15 bg-[#eaf4ec] p-7">
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
-                  Warum so wenig Fragen?
-                </p>
-                <h3 className="mt-4 text-2xl font-bold tracking-[-0.03em] text-slate-950">
-                  Wir fragen nur, was den nächsten Schritt verändert.
-                </h3>
-                <div className="mt-5 space-y-4 text-sm leading-7 text-slate-700">
-                  <p>
-                    Heiztyp entscheidet, ob ein Vergleich plausibel ist oder ob zuerst Verstehen
-                    sinnvoller wäre.
+              <div className="space-y-5">
+                <aside className="surface-panel rounded-[2.25rem] px-7 py-7">
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+                    Warum so wenig Fragen?
                   </p>
-                  <p>
-                    Wohnfläche und Personen reichen aus, um deinen Haushalt ehrlich grob einzuordnen.
+                  <h3 className="mt-4 text-2xl font-bold tracking-[-0.03em] text-slate-950">
+                    Wir fragen nur, was den nächsten Schritt verändert.
+                  </h3>
+                  <div className="mt-5 space-y-4 text-sm leading-7 text-slate-700">
+                    <p>
+                      Heiztyp entscheidet, ob ein Vergleich plausibel ist oder ob zuerst Verstehen
+                      sinnvoller wäre.
+                    </p>
+                    <p>
+                      Wohnfläche und Personen reichen aus, um deinen Haushalt ehrlich grob einzuordnen.
+                    </p>
+                    <p>
+                      Stromverbrauch fragen wir nur, wenn er für deinen nächsten Schritt wirklich
+                      relevant sein könnte.
+                    </p>
+                  </div>
+                </aside>
+
+                <aside className="rounded-[2.25rem] border border-[#13263b]/10 bg-[#13263b] px-7 py-7 text-white shadow-[0_30px_70px_-55px_rgba(15,23,42,0.7)]">
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary/90">
+                    Entscheidungslogik
                   </p>
-                  <p>
-                    Stromverbrauch fragen wir nur, wenn er für deinen nächsten Schritt wirklich
-                    relevant sein könnte.
-                  </p>
-                </div>
-              </aside>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+                    {[
+                      ['Vergleichen', 'wenn Tarif oder Vertrag jetzt wirklich der Hebel ist'],
+                      ['Beobachten', 'wenn Timing wichtiger ist als sofortige Aktion'],
+                      ['Verstehen', 'wenn zuerst Klarheit mehr bringt als Wechselstress'],
+                    ].map(([title, text]) => (
+                      <div key={title} className="border-t border-white/12 pt-4">
+                        <p className="text-lg font-bold tracking-[-0.03em] text-white">{title}</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-300">{text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </aside>
+              </div>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-[2.25rem] border border-slate-200 bg-white shadow-[0_40px_90px_-68px_rgba(15,23,42,0.35)]">
-              <div className="border-b border-slate-100 px-7 py-6 md:px-8">
+            <div className="surface-panel overflow-hidden rounded-[2.6rem]">
+              <div className="border-b border-slate-200/70 px-7 py-6 md:px-8">
                 <div className="flex items-start justify-between gap-4">
                   <div className="max-w-2xl">
                     <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
@@ -324,12 +346,12 @@ export default function SparCheckPage() {
                       {currentStep.description}
                     </p>
                   </div>
-                  <div className="rounded-full bg-[#f5f7f7] px-4 py-2 text-sm font-semibold text-slate-500">
+                  <div className="rounded-full border border-slate-200 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-500">
                     {Math.round(progress)}%
                   </div>
                 </div>
 
-                <div className="mt-6 h-2 overflow-hidden rounded-full bg-slate-100">
+                <div className="mt-6 h-2 overflow-hidden rounded-full bg-slate-200/80">
                   <div
                     className="h-full rounded-full bg-primary transition-all duration-300"
                     style={{ width: `${progress}%` }}
@@ -337,7 +359,7 @@ export default function SparCheckPage() {
                 </div>
               </div>
 
-              <div className="grid gap-8 px-7 py-7 md:px-8 lg:grid-cols-[1fr_16rem]">
+              <div className="grid gap-8 px-7 py-7 md:px-8 lg:grid-cols-[1fr_18rem]">
                 <div>
                   {currentStepId === 'heating' ? (
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -349,10 +371,10 @@ export default function SparCheckPage() {
                             update({ heating: option.value });
                             setStepIndex(1);
                           }}
-                          className={`rounded-[1.6rem] border p-5 text-left transition ${
+                          className={`rounded-[1.85rem] p-5 text-left transition ${
                             data.heating === option.value
-                              ? 'border-primary bg-[#f3fbf5]'
-                              : 'border-slate-200 bg-[#fbfcfc] hover:border-primary/50 hover:bg-[#f5faf6]'
+                              ? 'surface-panel border-primary/45 bg-[linear-gradient(180deg,rgba(121,208,138,0.14),rgba(255,255,255,0.92))] shadow-[0_24px_50px_-38px_rgba(23,50,77,0.35)]'
+                              : 'surface-panel hover:-translate-y-0.5 hover:border-primary/30 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(245,250,246,0.98))]'
                           }`}
                         >
                           <div className="text-xl font-bold tracking-[-0.02em] text-slate-950">
@@ -371,7 +393,7 @@ export default function SparCheckPage() {
                           <label className="text-lg font-bold tracking-[-0.02em] text-slate-950">
                             Wohnfläche
                           </label>
-                          <div className="rounded-full bg-[#f3f8f4] px-4 py-2 text-base font-bold text-slate-900">
+                          <div className="rounded-full border border-slate-200 bg-white/70 px-4 py-2 text-base font-bold text-slate-900">
                             {data.area} m²
                           </div>
                         </div>
@@ -401,10 +423,10 @@ export default function SparCheckPage() {
                               key={value}
                               type="button"
                               onClick={() => update({ persons: value })}
-                              className={`h-14 w-14 rounded-[1rem] border text-lg font-bold transition ${
-                                data.persons === value
-                                  ? 'border-primary bg-[#f3fbf5] text-slate-950'
-                                  : 'border-slate-200 bg-[#fbfcfc] text-slate-700 hover:border-primary/40'
+                            className={`h-14 w-14 rounded-[1rem] text-lg font-bold transition ${
+                              data.persons === value
+                                  ? 'surface-panel border-primary/45 bg-[linear-gradient(180deg,rgba(121,208,138,0.14),rgba(255,255,255,0.92))] text-slate-950'
+                                  : 'surface-panel text-slate-700 hover:-translate-y-0.5 hover:border-primary/20'
                               }`}
                             >
                               {value}
@@ -426,10 +448,10 @@ export default function SparCheckPage() {
                               electricityKwh: estimateElectricity(data.persons),
                             })
                           }
-                          className={`rounded-[1.6rem] border p-5 text-left transition ${
+                          className={`rounded-[1.85rem] p-5 text-left transition ${
                             data.electricityKnown
-                              ? 'border-primary bg-[#f3fbf5]'
-                              : 'border-slate-200 bg-[#fbfcfc] hover:border-primary/40'
+                              ? 'surface-panel border-primary/45 bg-[linear-gradient(180deg,rgba(121,208,138,0.14),rgba(255,255,255,0.92))]'
+                              : 'surface-panel hover:-translate-y-0.5 hover:border-primary/20'
                           }`}
                         >
                           <div className="text-xl font-bold tracking-[-0.02em] text-slate-950">
@@ -443,10 +465,10 @@ export default function SparCheckPage() {
                         <button
                           type="button"
                           onClick={() => update({ electricityKnown: false })}
-                          className={`rounded-[1.6rem] border p-5 text-left transition ${
+                          className={`rounded-[1.85rem] p-5 text-left transition ${
                             !data.electricityKnown
-                              ? 'border-primary bg-[#f3fbf5]'
-                              : 'border-slate-200 bg-[#fbfcfc] hover:border-primary/40'
+                              ? 'surface-panel border-primary/45 bg-[linear-gradient(180deg,rgba(121,208,138,0.14),rgba(255,255,255,0.92))]'
+                              : 'surface-panel hover:-translate-y-0.5 hover:border-primary/20'
                           }`}
                         >
                           <div className="text-xl font-bold tracking-[-0.02em] text-slate-950">
@@ -459,7 +481,7 @@ export default function SparCheckPage() {
                       </div>
 
                       {data.electricityKnown ? (
-                        <div className="rounded-[1.6rem] bg-[#f7f9f9] p-5">
+                        <div className="surface-panel rounded-[1.85rem] px-5 py-5">
                           <label className="text-lg font-bold tracking-[-0.02em] text-slate-950">
                             Jahresverbrauch in kWh
                           </label>
@@ -487,15 +509,18 @@ export default function SparCheckPage() {
                   ) : null}
                 </div>
 
-                <aside className="rounded-[1.75rem] bg-[#f7f8f6] p-5">
+                <aside className="surface-panel rounded-[1.9rem] px-5 py-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
                     Warum wir das fragen
                   </p>
                   <p className="mt-3 text-sm leading-7 text-slate-600">{currentStep.help}</p>
+                  <div className="mt-6 border-t border-slate-200/80 pt-4 text-xs uppercase tracking-[0.22em] text-slate-400">
+                    Schritt {safeStepIndex + 1} von {stepIds.length}
+                  </div>
                 </aside>
               </div>
 
-              <div className="flex items-center justify-between border-t border-slate-100 px-7 py-5 md:px-8">
+              <div className="flex items-center justify-between border-t border-slate-200/70 px-7 py-5 md:px-8">
                 {canGoBack ? (
                   <button
                     type="button"
@@ -514,7 +539,7 @@ export default function SparCheckPage() {
                   <button
                     type="button"
                     onClick={advance}
-                    className="inline-flex min-h-12 items-center justify-center rounded-[1rem] bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    className="inline-flex min-h-12 items-center justify-center rounded-[1rem] bg-[#13263b] px-5 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-[#17324d]"
                   >
                     {isLastStep ? 'Einordnung ansehen' : 'Weiter'}
                   </button>

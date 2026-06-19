@@ -21,8 +21,8 @@ function subscribeToClientReady(callback: () => void) {
 
 function ResultLoadingState() {
   return (
-    <div className="min-h-screen bg-[#eef2f2] px-6 py-28">
-      <div className="mx-auto max-w-3xl rounded-[2rem] border border-slate-200 bg-white p-8 text-center text-slate-600 shadow-[0_40px_90px_-68px_rgba(15,23,42,0.35)]">
+    <div className="min-h-screen bg-background px-6 py-28">
+      <div className="surface-panel mx-auto max-w-3xl rounded-[2rem] p-8 text-center text-slate-600">
         Einordnung wird geladen ...
       </div>
     </div>
@@ -31,8 +31,8 @@ function ResultLoadingState() {
 
 function MissingResultState() {
   return (
-    <div className="min-h-screen bg-[#eef2f2] px-6 py-28">
-      <div className="mx-auto max-w-3xl rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-[0_40px_90px_-68px_rgba(15,23,42,0.35)]">
+    <div className="min-h-screen bg-background px-6 py-28">
+      <div className="surface-panel mx-auto max-w-3xl rounded-[2rem] p-8 text-center">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
           Keine Einordnung vorhanden
         </p>
@@ -44,7 +44,7 @@ function MissingResultState() {
         </p>
         <Link
           href="/spar-check"
-          className="mt-8 inline-flex min-h-14 items-center justify-center rounded-[1.1rem] bg-slate-900 px-6 text-base font-semibold text-white transition hover:bg-slate-800"
+          className="mt-8 inline-flex min-h-14 items-center justify-center rounded-[1.1rem] bg-[#13263b] px-6 text-base font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#17324d]"
         >
           Zum Spar-Check
         </Link>
@@ -81,11 +81,13 @@ function SparCheckResultContent() {
   }, [data.heating, data.zip, result.mainRecommendation.kind]);
 
   return (
-    <div className="min-h-screen bg-[#eef2f2] text-slate-950">
+    <div className="min-h-screen bg-background text-slate-950">
       <section className="relative overflow-hidden bg-[#13263b] px-6 pb-18 pt-28 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(107,193,123,0.18),transparent_36%),linear-gradient(180deg,rgba(19,38,59,0.92)_0%,rgba(19,38,59,1)_100%)]" />
-        <div className="relative mx-auto max-w-6xl">
-          <div className="max-w-4xl">
+        <div className="editorial-grid absolute inset-0 opacity-20" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(244,166,42,0.12),transparent_28%)]" />
+        <div className="relative mx-auto max-w-7xl">
+          <div className="max-w-4xl rounded-[2rem] border border-white/10 bg-white/6 p-6 shadow-2xl shadow-black/10 backdrop-blur-sm md:p-8">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary/85">
               Deine persönliche Einordnung
             </p>
@@ -111,46 +113,77 @@ function SparCheckResultContent() {
         </div>
       </section>
 
-      <section className="px-6 py-16 md:py-20">
-        <div className="mx-auto max-w-5xl space-y-6">
-          <section className="rounded-[2rem] border border-slate-200 bg-white p-7 shadow-[0_40px_90px_-72px_rgba(15,23,42,0.32)]">
+      <section className="radial-wash px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-6xl space-y-6">
+          <section className="surface-panel rounded-[2.2rem] px-7 py-7">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
               Haushaltsprofil
             </p>
             <p className="mt-4 text-base leading-7 text-slate-600">{result.profileLine}</p>
           </section>
 
-          <section className="rounded-[2rem] border border-slate-200 bg-white p-7 shadow-[0_40px_90px_-72px_rgba(15,23,42,0.32)]">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
-              {result.diagnosisTitle}
-            </p>
-            <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em] text-slate-950">
-              {result.mainRecommendation.title}
-            </h2>
-            <p className="mt-5 text-base leading-7 text-slate-600">{result.diagnosisText}</p>
-            <div className="mt-6 rounded-[1.4rem] bg-[#f6f8f8] p-5">
-              <p className="text-sm font-semibold text-slate-500">Warum wir so empfehlen</p>
-              <p className="mt-2 text-base leading-7 text-slate-700">
-                {result.recommendationReason}
+          <section className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
+            <div className="surface-panel rounded-[2.2rem] px-7 py-7">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+                {result.diagnosisTitle}
               </p>
-              <p className="mt-4 text-sm leading-6 text-slate-500">{result.savingsHint}</p>
+              <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em] text-slate-950">
+                {result.mainRecommendation.title}
+              </h2>
+              <p className="mt-5 text-base leading-7 text-slate-600">{result.diagnosisText}</p>
+              <div className="mt-6 rounded-[1.6rem] border border-slate-200 bg-white/70 p-5">
+                <p className="text-sm font-semibold text-slate-500">Warum wir so empfehlen</p>
+                <p className="mt-2 text-base leading-7 text-slate-700">
+                  {result.recommendationReason}
+                </p>
+                <p className="mt-4 text-sm leading-6 text-slate-500">{result.savingsHint}</p>
+              </div>
+            </div>
+
+            <div className="rounded-[2.2rem] border border-[#13263b]/10 bg-[#13263b] px-7 py-7 text-white shadow-[0_34px_80px_-58px_rgba(15,23,42,0.75)]">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary/90">
+                Sparpotenzial
+              </p>
+              <p className="mt-4 text-5xl font-bold tracking-[-0.06em] text-white">
+                {savingRangeText}
+              </p>
+              <p className="mt-4 text-base leading-7 text-slate-300">
+                Keine Garantiezahl, sondern eine ehrliche Spanne dafür, was in deiner Situation
+                typischerweise drin sein kann.
+              </p>
+              <div className="mt-8 grid gap-3">
+                {[
+                  `Heizung: ${data.heating === 'heatpump' ? 'Wärmepumpe' : data.heating}`,
+                  result.householdSummary,
+                  `${potentialLevel} Potenzial`,
+                ].map((item) => (
+                  <div key={item} className="rounded-[1.15rem] border border-white/10 bg-white/6 px-4 py-3 text-sm text-slate-200">
+                    {item}
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 
-          <section className="rounded-[2rem] border border-slate-900 bg-slate-950 p-7 text-white shadow-[0_40px_90px_-72px_rgba(15,23,42,0.45)]">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
-              {result.mainRecommendation.eyebrow}
-            </p>
-            <h2 className="mt-4 text-balance text-4xl font-bold tracking-[-0.05em]">
-              {result.mainRecommendation.title}
-            </h2>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
-              {result.mainRecommendation.description}
-            </p>
-            <div className="mt-6 rounded-[1.4rem] border border-white/10 bg-white/6 p-5 text-sm leading-7 text-slate-200">
-              <strong className="text-white">Warum dieser Weg passt:</strong>{' '}
-              {result.mainRecommendation.reason}
+          <section className="rounded-[2.2rem] border border-slate-900 bg-slate-950 p-7 text-white shadow-[0_40px_90px_-72px_rgba(15,23,42,0.45)]">
+            <div className="grid gap-6 lg:grid-cols-[1fr_14rem] lg:items-start">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+                  {result.mainRecommendation.eyebrow}
+                </p>
+                <h2 className="mt-4 text-balance text-4xl font-bold tracking-[-0.05em]">
+                  {result.mainRecommendation.title}
+                </h2>
+                <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
+                  {result.mainRecommendation.description}
+                </p>
+              </div>
+              <div className="rounded-[1.6rem] border border-white/10 bg-white/6 px-4 py-4 text-sm leading-7 text-slate-200">
+                <strong className="text-white">Warum dieser Weg passt:</strong>{' '}
+                {result.mainRecommendation.reason}
+              </div>
             </div>
+
             <button
               type="button"
               onClick={() => {
@@ -161,14 +194,14 @@ function SparCheckResultContent() {
                 });
                 router.push(result.mainRecommendation.href);
               }}
-              className="mt-8 inline-flex min-h-14 items-center justify-center rounded-[1.1rem] bg-primary px-6 text-base font-semibold text-slate-950 transition hover:bg-primary/90"
+              className="mt-8 inline-flex min-h-14 items-center justify-center rounded-[1.1rem] bg-primary px-6 text-base font-semibold text-slate-950 transition hover:-translate-y-0.5 hover:bg-primary/90"
             >
               {result.mainRecommendation.ctaLabel}
             </button>
           </section>
 
           <section className="grid gap-6 lg:grid-cols-[0.98fr_1.02fr]">
-            <div className="rounded-[2rem] border border-slate-200 bg-[#f7f8f6] p-7">
+            <div className="surface-panel rounded-[2.2rem] px-7 py-7">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">
                 {result.alternativePath.eyebrow}
               </p>
@@ -191,13 +224,13 @@ function SparCheckResultContent() {
                   });
                   router.push(result.alternativePath.href);
                 }}
-                className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[1rem] border border-slate-300 px-5 text-sm font-semibold text-slate-900 transition hover:bg-white"
+                className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[1rem] border border-slate-300 px-5 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:bg-white"
               >
                 {result.alternativePath.ctaLabel}
               </button>
             </div>
 
-            <div className="rounded-[2rem] border border-primary/20 bg-[#eaf4ec] p-7">
+            <div className="rounded-[2.2rem] border border-primary/20 bg-[#eaf4ec] p-7 shadow-[0_34px_80px_-58px_rgba(15,23,42,0.24)]">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
                 {result.watcherFallback.eyebrow}
               </p>
@@ -228,19 +261,19 @@ function SparCheckResultContent() {
                   });
                   router.push(result.watcherFallback.href);
                 }}
-                className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[1rem] bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[1rem] bg-[#13263b] px-5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#17324d]"
               >
                 {result.watcherFallback.ctaLabel}
               </button>
             </div>
           </section>
 
-          <section className="rounded-[2rem] border border-slate-200 bg-white p-7 shadow-[0_40px_90px_-72px_rgba(15,23,42,0.32)]">
+          <section className="surface-panel rounded-[2.2rem] px-7 py-7">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+              Methodik & Vertrauen
+            </p>
             <div className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr]">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
-                  Methodik & Vertrauen
-                </p>
                 <h3 className="mt-4 text-3xl font-bold tracking-[-0.04em] text-slate-950">
                   {result.trustBlock.title}
                 </h3>

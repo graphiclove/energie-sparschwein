@@ -2,13 +2,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafaf8;
-  --foreground: #171717;
-  --primary: #6bc17b;
+  --background: #eef3f1;
+  --foreground: #132132;
+  --primary: #79d08a;
   --secondary: #17324d;
-  --accent: #f59e0b;
+  --accent: #f4a62a;
   --hero-bg-start: #0e2236;
   --hero-bg-end: #17324d;
+  --surface: #f8fbfa;
+  --surface-strong: #dfe8e4;
+  --ink-soft: #5b6773;
+  --grid-line: rgba(19, 33, 50, 0.08);
 }
 
 @theme inline {
@@ -19,18 +23,63 @@
   --color-accent: var(--accent);
   --color-hero-bg-start: var(--hero-bg-start);
   --color-hero-bg-end: var(--hero-bg-end);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-ink-soft: var(--ink-soft);
   --font-sans: 'Inter', sans-serif;
   --font-heading: 'Plus Jakarta Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Inter', sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+a,
+button {
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    opacity 180ms ease;
+}
+
+.surface-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(248, 251, 250, 0.96) 100%);
+  border: 1px solid rgba(19, 33, 50, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 28px 60px rgba(14, 34, 54, 0.08);
+}
+
+.editorial-grid {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.radial-wash {
+  background:
+    radial-gradient(circle at top left, rgba(121, 208, 138, 0.14) 0%, transparent 32%),
+    radial-gradient(circle at bottom right, rgba(23, 50, 77, 0.1) 0%, transparent 34%);
 }
 
 /* Custom animations */
